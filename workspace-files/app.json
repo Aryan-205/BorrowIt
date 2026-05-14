@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Borrow-It",
+    "slug": "borrow-it",
+    "version": "1.0.0",
+    "scheme": "borrowit",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "bundleIdentifier": "com.borrowit.r7k2.runable",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.borrowit.r7k2.runable",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Borrow-It needs camera access for item inspection and QR handover scanning."
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "extra": {
+      "apiUrl": "https://1l0oskvouaqvjjatva3n0-preview-4200.runable.site/"
+    }
+  }
+}
