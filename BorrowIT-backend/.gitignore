@@ -1,2 +1,15 @@
 
 /generated/prisma
+/node_modules
+/dist
+/build
+/coverage
+/logs
+/tmp
+/temp
+/test
+/tests
+/test-results
+
+.env
+.env.local
