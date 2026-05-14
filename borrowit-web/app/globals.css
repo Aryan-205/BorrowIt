@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f6f6;
+  --foreground: #000000;
+  --surface: #ffffff;
+  --border: #eeeeee;
+  --muted: #7e7576;
+  --accent: #2563eb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes borrowit-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-borrowit-pulse {
+  animation: borrowit-pulse 1.6s ease-in-out infinite;
+}
