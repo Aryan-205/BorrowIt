@@ -1,12 +1,12 @@
 "use client";
 
-import { radius, spacing } from "@/lib/theme";
+import { radius } from "@/lib/theme";
 
 export function SkeletonCard() {
   return (
     <div
-      className="w-[220px] shrink-0 overflow-hidden rounded-2xl border border-[#EEEEEE] bg-white"
-      style={{ borderRadius: radius.md, marginRight: spacing.md }}
+      className="w-full shrink-0 overflow-hidden rounded-2xl border border-[#EEEEEE] bg-white"
+      style={{ borderRadius: radius.md }}
     >
       <div className="h-[140px] w-full animate-borrowit-pulse bg-[#F6F6F6]" />
       <div className="flex flex-col gap-2 p-4">

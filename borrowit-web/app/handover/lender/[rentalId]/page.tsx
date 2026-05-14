@@ -1,29 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle, QrCode } from "@phosphor-icons/react";
-import { spacing, radius } from "@/lib/theme";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ChatCircle, CheckCircle, QrCode } from "@phosphor-icons/react";
+import { radius } from "@/lib/theme";
 import { apiUrl } from "@/lib/env";
+import type { RentalClient } from "@/lib/rentalTypes";
 
-function QRDisplay({ token }: { token: string }) {
-  return (
-    <div
-      className="w-[240px] shrink-0 rounded-2xl border-2 border-[#EEEEEE] bg-white p-3 shadow-[0_10px_30px_rgba(0,0,0,0.04)]"
-      style={{ borderRadius: radius.md }}
-    >
-      <div className="relative flex aspect-square items-center justify-center rounded-lg bg-white">
-        <span className="absolute left-0 top-0 h-9 w-9 rounded border-4 border-black" />
-        <span className="absolute right-0 top-0 h-9 w-9 rounded border-4 border-black" />
-        <span className="absolute bottom-0 left-0 h-9 w-9 rounded border-4 border-black" />
-        <div className="flex flex-col items-center gap-2">
-          <QrCode size={80} weight="fill" className="text-black" />
-          <span className="text-center text-[28px] font-black tracking-[0.35em] text-black">{token}</span>
-        </div>
-      </div>
-    </div>
-  );
+function shortRentalRef(id: string) {
+  const tail = id.replace(/-/g, "").slice(-5).toUpperCase();
+  return `#BRW-${tail || "00000"}`;
 }
 
 export default function LenderHandoverPage() {
@@ -31,8 +19,21 @@ export default function LenderHandoverPage() {
   const rentalId = typeof params.rentalId === "string" ? params.rentalId : "";
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [qrData, setQrData] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
   const [countdown, setCountdown] = useState(30);
+
+  const { data: rentalRes } = useQuery({
+    queryKey: ["rental", rentalId],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`/api/rentals/${rentalId}`), { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json() as Promise<{ rental: RentalClient }>;
+    },
+    enabled: Boolean(rentalId),
+  });
+
+  const rental = rentalRes?.rental;
 
   const generateQR = useMutation({
     mutationFn: async () => {
@@ -41,10 +42,11 @@ export default function LenderHandoverPage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to generate QR");
-      return res.json() as Promise<{ token: string }>;
+      return res.json() as Promise<{ token: string; qrData?: string }>;
     },
     onSuccess: (data) => {
       setToken(data.token);
+      setQrData(data.qrData ?? null);
       setCountdown(30);
     },
     onError: (e: Error) => window.alert(e.message),
@@ -62,7 +64,7 @@ export default function LenderHandoverPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps -- refresh uses stable mutate
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!rentalId) return;
@@ -85,70 +87,138 @@ export default function LenderHandoverPage() {
     if (rentalId) generateQR.mutate();
   }, [rentalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const qrSrc =
+    qrData != null
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrData)}`
+      : null;
+
   if (verified) {
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 bg-white px-5 pt-[env(safe-area-inset-top)]">
-        <CheckCircle size={80} weight="fill" className="text-[#22C55E]" />
-        <h1 className="text-center text-[28px] font-bold text-black">Handover Complete!</h1>
-        <p className="max-w-sm text-center text-[15px] text-[#7E7576]">
+      <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 px-5 py-12">
+        <CheckCircle size={80} weight="fill" className="text-emerald-500" />
+        <h1 className="text-center text-2xl font-bold text-black md:text-[28px]">Handover complete</h1>
+        <p className="max-w-sm text-center text-[15px] text-[#6B7280]">
           The borrower has scanned and accepted the item.
         </p>
         <button
           type="button"
           onClick={() => router.push("/rentals")}
-          className="rounded-lg bg-black px-8 py-4 font-semibold text-white"
+          className="rounded-full bg-black px-8 py-3.5 text-sm font-semibold text-white"
           style={{ borderRadius: radius.sm }}
         >
-          View Rentals →
+          View rentals
         </button>
       </div>
     );
   }
 
+  const itemTitle = rental?.itemTitle ?? "Sony A7IV Mirrorless";
+  const thumb = rental?.itemMediaUrls?.[0];
+  const days = rental?.totalDays ?? 5;
+
   return (
-    <div className="min-h-[100dvh] bg-white pt-[env(safe-area-inset-top)]">
-      <header
-        className="flex items-center gap-3 border-b border-[#EEEEEE] px-5 py-4"
-        style={{ padding: spacing.margin }}
+    <div className="px-4 py-6 md:px-6 md:py-10">
+      <Link
+        href="/rentals"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#4B5563] hover:text-black md:mb-8"
       >
-        <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center" aria-label="Back">
-          <ArrowLeft size={22} weight="bold" />
-        </button>
-        <h1 className="text-xl font-semibold text-black">Lender Handover</h1>
-      </header>
+        <ArrowLeft size={18} weight="bold" />
+        Back to rentals
+      </Link>
 
-      <div className="flex flex-col items-center gap-6 px-5 py-10" style={{ padding: spacing.margin }}>
-        <h2 className="text-center text-[28px] font-bold text-black">Show this QR</h2>
-        <p className="max-w-sm text-center text-[15px] text-[#7E7576]">
-          Let the borrower scan with their app to confirm pickup.
-        </p>
+      <div
+        className="mx-auto max-w-[560px] rounded-2xl border border-[#E5E7EB] bg-white px-5 py-8 shadow-sm md:rounded-3xl md:px-10 md:py-10"
+        style={{ borderRadius: radius.lg }}
+      >
+        <div className="text-center">
+          <span className="inline-block rounded-full bg-[#F3F4F6] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
+            In person handover
+          </span>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-black md:text-3xl">Protocol Verification</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#6B7280] md:text-[15px]">
+            Ask the borrower to scan this code to confirm the successful handover of your item.
+          </p>
+        </div>
 
-        {generateQR.isPending && !token ? (
-          <div className="flex flex-col items-center gap-4 pt-8">
-            <span className="h-10 w-10 animate-spin rounded-full border-2 border-black border-t-transparent" />
-            <p className="text-[#7E7576]">Generating secure code…</p>
-          </div>
-        ) : token ? (
-          <>
-            <QRDisplay token={token} />
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className="flex h-[72px] w-[72px] flex-col items-center justify-center rounded-full border-4"
-                style={{ borderColor: countdown > 10 ? "#22C55E" : "#EF4444" }}
-              >
-                <span className={`text-[26px] font-bold ${countdown > 10 ? "text-black" : "text-[#EF4444]"}`}>{countdown}</span>
-                <span className="-mt-1 text-xs text-[#7E7576]">sec</span>
+        <div className="relative mx-auto mt-8 max-w-[280px]">
+          <div
+            className="relative overflow-hidden rounded-2xl border-2 border-[#E5E7EB] bg-white p-4"
+            style={{ borderRadius: radius.md }}
+          >
+            {generateQR.isPending && !token ? (
+              <div className="flex aspect-square flex-col items-center justify-center gap-3 bg-[#FAFAFA]">
+                <span className="h-10 w-10 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                <p className="text-xs text-[#6B7280]">Generating code…</p>
               </div>
-              <p className="text-xs text-[#7E7576]">Code refreshes automatically</p>
+            ) : qrSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={qrSrc} alt="Handover QR code" className="aspect-square w-full rounded-lg object-contain" width={240} height={240} />
+            ) : (
+              <div className="flex aspect-square flex-col items-center justify-center gap-2 bg-[#FAFAFA]">
+                <QrCode size={72} weight="fill" className="text-black" />
+                <span className="font-mono text-lg font-bold tracking-widest text-black">{token}</span>
+              </div>
+            )}
+            <div className="absolute -right-1 -top-1 flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md">
+              <CheckCircle size={20} weight="fill" />
             </div>
-            <div className="flex items-center gap-2.5 rounded-full bg-[#EFF6FF] px-4 py-2.5">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#2563EB] border-t-transparent" />
-              <span className="text-[13px] font-semibold text-[#2563EB]">Waiting for borrower to scan…</span>
-            </div>
-          </>
-        ) : null}
+          </div>
+          {token ? (
+            <p className="mt-3 text-center text-xs text-[#9CA3AF]">
+              Refreshes in <span className="font-semibold text-black">{countdown}s</span>
+            </p>
+          ) : null}
+        </div>
 
-        <p className="mt-2 text-xs text-[#7E7576]">Rental ID: {rentalId.slice(0, 16)}…</p>
+        <div className="mt-8 space-y-3">
+          <div className="flex items-center gap-3 rounded-2xl bg-[#F3F4F6] p-3 md:p-4">
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
+              {thumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumb} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-2xl">📷</div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold text-black">{itemTitle}</p>
+              <p className="text-xs text-[#6B7280]">Rental ID: {shortRentalRef(rentalId || "x")}</p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-xs text-[#6B7280]">Duration</p>
+              <p className="font-semibold text-black">
+                {days} day{days !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-2xl bg-[#F3F4F6] p-3 md:p-4">
+            <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-[#E5E7EB] to-[#D1D5DB]" />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-black">Sarah Jenkins</p>
+              <p className="text-xs text-[#6B7280]">Verified Borrower · 4.9 ★</p>
+            </div>
+            <button type="button" className="shrink-0 rounded-lg border border-[#D1D5DB] bg-white p-2.5 text-black" aria-label="Message">
+              <ChatCircle size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 space-y-4">
+          <button
+            type="button"
+            onClick={() => router.push("/rentals")}
+            className="w-full rounded-full bg-black py-3.5 text-sm font-semibold text-white md:text-base"
+          >
+            Cancel Handover
+          </button>
+          <p className="text-center text-xs text-[#6B7280]">
+            Need help?{" "}
+            <a href="#" className="font-semibold text-black underline">
+              Contact Support
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
