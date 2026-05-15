@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, QrCode } from "@phosphor-icons/react";
+import { PiArrowLeftBold, PiCheckCircleFill, PiQrCodeDuotone } from "react-icons/pi";
 import { spacing, radius } from "@/lib/theme";
 import { apiUrl } from "@/lib/env";
 
@@ -36,7 +36,7 @@ export default function BorrowerHandoverPage() {
   if (verified) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 bg-white px-5 pt-[env(safe-area-inset-top)]">
-        <CheckCircle size={80} weight="fill" className="text-[#22C55E]" />
+        <PiCheckCircleFill size={80} className="text-[#22C55E]" />
         <h1 className="text-center text-[28px] font-bold text-black">Pickup confirmed</h1>
         <p className="max-w-sm text-center text-[15px] text-[#7E7576]">
           Your rental is now active. Enjoy the item and return it on time.
@@ -60,14 +60,14 @@ export default function BorrowerHandoverPage() {
         style={{ padding: spacing.margin }}
       >
         <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center" aria-label="Back">
-          <ArrowLeft size={22} weight="bold" />
+          <PiArrowLeftBold size={22} />
         </button>
         <h1 className="text-xl font-semibold text-black">Borrower pickup</h1>
       </header>
 
       <div className="flex flex-col items-center gap-6 px-5 py-12 text-center" style={{ padding: spacing.margin }}>
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#F6F6F6]">
-          <QrCode size={56} weight="duotone" className="text-black" />
+          <PiQrCodeDuotone size={56} className="text-black" />
         </div>
         <h2 className="text-[28px] font-bold text-black">Scan the lender&apos;s QR</h2>
         <p className="max-w-md text-[15px] leading-relaxed text-[#7E7576]">

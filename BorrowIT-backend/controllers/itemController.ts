@@ -5,6 +5,8 @@ import {
   itemToClient,
   listClientItems,
   type CreateItemBody,
+  updateItem as updateItemModel,
+  deleteItem as deleteItemModel,
 } from "../models/itemModel.js";
 
 export function listItems(_req: Request, res: Response) {
@@ -28,4 +30,24 @@ export function getItemById(req: Request, res: Response) {
     return;
   }
   res.json({ item: itemToClient(it) });
+}
+
+export function updateItem(req: Request, res: Response) {
+  const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+  const result = updateItem(id, req.body as CreateItemBody);
+  if (!result.ok) {
+    res.status(400).json({ message: result.message });
+    return;
+  }
+  res.json({ item: itemToClient(result.item) });
+}
+
+export function deleteItem(req: Request, res: Response) {
+  const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+  const result = deleteItem(id);
+  if (!result.ok) {
+    res.status(400).json({ message: result.message });
+    return;
+  }
+  res.json({ message: "Item deleted successfully" });
 }

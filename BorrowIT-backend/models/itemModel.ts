@@ -104,3 +104,20 @@ export function setItemAvailable(itemId: string, available: boolean): void {
   const it = findItemById(itemId);
   if (it) it.isAvailable = available;
 }
+
+export function updateItem(itemId: string, body: CreateItemBody): { ok: true; item: ItemRow } | { ok: false; message: string } {
+  const it = findItemById(itemId);
+  if (!it) {
+    return { ok: false, message: "Item not found" };
+  }
+  return { ok: true, item: it };
+}
+
+export function deleteItem(itemId: string): { ok: true; message: string } | { ok: false; message: string } {
+  const it = findItemById(itemId);
+  if (!it) {
+    return { ok: false, message: "Item not found" };
+  }
+  items = items.filter((i) => i.id !== itemId);  
+  return { ok: true, message: "Item deleted successfully" };
+}

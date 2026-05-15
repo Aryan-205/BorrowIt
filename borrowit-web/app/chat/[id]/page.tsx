@@ -4,19 +4,19 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
-  ArrowLeft,
-  Camera,
-  ChatCircle,
-  Handshake,
-  Image as ImageIcon,
-  Info,
-  MagnifyingGlass,
-  PaperPlaneTilt,
-  Phone,
-  Plus,
-  Smiley,
-  VideoCamera,
-} from "@phosphor-icons/react";
+  PiArrowLeftBold,
+  PiCamera,
+  PiChatCircleBold,
+  PiHandshakeBold,
+  PiImage,
+  PiInfo,
+  PiMagnifyingGlass,
+  PiPaperPlaneTiltFill,
+  PiPhone,
+  PiPlus,
+  PiSmiley,
+  PiVideoCamera,
+} from "react-icons/pi";
 
 type Thread = { id: string; name: string; item: string; snippet: string; time: string };
 
@@ -80,12 +80,12 @@ export default function ChatPage() {
         <div className="flex items-center justify-between border-b border-[#F3F4F6] px-4 py-4 md:px-5">
           <h1 className="text-xl font-bold text-black md:text-2xl">Messages</h1>
           <button type="button" className="rounded-lg p-2 text-black hover:bg-[#F3F4F6]" aria-label="New message">
-            <ChatCircle size={22} weight="bold" />
+            <PiChatCircleBold size={22} />
           </button>
         </div>
         <div className="px-4 pb-3 md:px-5">
           <div className="relative">
-            <MagnifyingGlass
+            <PiMagnifyingGlass
               size={18}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"
               aria-hidden
@@ -138,7 +138,7 @@ export default function ChatPage() {
             aria-label="Back to messages"
             onClick={() => setShowList(true)}
           >
-            <ArrowLeft size={22} weight="bold" />
+            <PiArrowLeftBold size={22} />
           </button>
           <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-[#E5E7EB] to-[#D1D5DB]" />
           <div className="min-w-0 flex-1">
@@ -150,13 +150,13 @@ export default function ChatPage() {
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button type="button" className="rounded-full p-2 hover:bg-[#F3F4F6]" aria-label="Video call">
-              <VideoCamera size={22} />
+              <PiVideoCamera size={22} />
             </button>
             <button type="button" className="rounded-full p-2 hover:bg-[#F3F4F6]" aria-label="Voice call">
-              <Phone size={22} />
+              <PiPhone size={22} />
             </button>
             <button type="button" className="rounded-full p-2 hover:bg-[#F3F4F6]" aria-label="Details">
-              <Info size={22} />
+              <PiInfo size={22} />
             </button>
           </div>
         </header>
@@ -176,7 +176,7 @@ export default function ChatPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#F3F4F6] px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
-                <Camera size={22} className="shrink-0 text-[#6B7280]" />
+                <PiCamera size={22} className="shrink-0 text-[#6B7280]" />
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-black">{active.item.replace(/\s+Camera.*$/i, "")}</p>
                   <p className="text-xs text-[#6B7280]">Exchange Scheduled · 2:00 PM</p>
@@ -231,16 +231,16 @@ export default function ChatPage() {
               type="button"
               className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2.5 text-sm font-semibold text-white shadow-lg"
             >
-              <Handshake size={18} weight="bold" />
+              <PiHandshakeBold size={18} />
               Ready to Meet?
             </button>
           </div>
           <div className="mx-auto flex max-w-3xl items-end gap-2 pb-2">
             <button type="button" className="mb-1 rounded-full p-2 text-[#6B7280] hover:bg-[#F3F4F6]" aria-label="Attach">
-              <Plus size={22} />
+              <PiPlus size={22} />
             </button>
             <button type="button" className="mb-1 rounded-full p-2 text-[#6B7280] hover:bg-[#F3F4F6]" aria-label="Photo">
-              <ImageIcon size={22} />
+              <PiImage size={22} />
             </button>
             <div className="relative min-w-0 flex-1">
               <input
@@ -250,7 +250,7 @@ export default function ChatPage() {
                 className="w-full rounded-full border border-[#E5E7EB] bg-[#F3F4F6] py-3 pl-4 pr-11 text-[15px] outline-none placeholder:text-[#9CA3AF]"
               />
               <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#6B7280]" aria-label="Emoji">
-                <Smiley size={22} />
+                <PiSmiley size={22} />
               </button>
             </div>
             <button
@@ -258,7 +258,7 @@ export default function ChatPage() {
               className="mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-black text-white"
               aria-label="Send"
             >
-              <PaperPlaneTilt size={20} weight="fill" />
+              <PiPaperPlaneTiltFill size={20} />
             </button>
           </div>
           <p className="mx-auto max-w-3xl pb-1 text-center text-xs text-[#9CA3AF]">

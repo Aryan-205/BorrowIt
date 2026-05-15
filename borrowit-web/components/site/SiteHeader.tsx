@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Bell, Heart, List, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { PiBell, PiHeart, PiListBold, PiMagnifyingGlass, PiXBold } from "react-icons/pi";
 
 const nav = [
   { href: "/discover", label: "Browse" as const },
@@ -45,7 +45,7 @@ export function SiteHeader({
           </Link>
 
           <div className="relative mx-auto hidden min-w-0 max-w-xl flex-1 md:flex">
-            <MagnifyingGlass
+            <PiMagnifyingGlass
               size={18}
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7E7576]"
               aria-hidden
@@ -77,10 +77,10 @@ export function SiteHeader({
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-0">
             <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] sm:flex cursor-pointer active:scale-95 transition-all duration-200" aria-label="Notifications">
-              <Bell size={22} />
+              <PiBell size={22} />
             </button>
             <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] md:flex cursor-pointer active:scale-95 transition-all duration-200" aria-label="Wishlist">
-              <Heart size={22} />
+              <PiHeart size={22} />
             </button>
             <Link
               href="/lend"
@@ -102,14 +102,14 @@ export function SiteHeader({
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               onClick={() => setMenuOpen((o) => !o)}
             >
-              {menuOpen ? <X size={24} weight="bold" /> : <List size={24} weight="bold" />}
+              {menuOpen ? <PiXBold size={24} /> : <PiListBold size={24} />}
             </button>
           </div>
         </div>
 
         <div className="border-t border-[#F3F4F6] px-4 pb-3 md:hidden">
           <div className="relative flex">
-            <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#7E7576]" />
+            <PiMagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#7E7576]" />
             <input
               type="search"
               placeholder={searchPlaceholder}
@@ -125,7 +125,7 @@ export function SiteHeader({
           <div className="flex items-center justify-between border-b border-[#EEEEEE] px-4 py-3">
             <span className="text-lg font-bold">Menu</span>
             <button type="button" className="p-2" aria-label="Close" onClick={() => setMenuOpen(false)}>
-              <X size={24} weight="bold" />
+              <PiXBold size={24} />
             </button>
           </div>
           <nav className="flex flex-col gap-1 p-4">

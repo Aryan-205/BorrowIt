@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ChatCircle, CheckCircle, Phone, Star, VideoCamera } from "@phosphor-icons/react";
+import {
+  PiChatCircle,
+  PiCheckCircleFill,
+  PiPhone,
+  PiStarFill,
+  PiVideoCameraFill,
+} from "react-icons/pi";
 import { spacing, radius } from "@/lib/theme";
+import { useState } from "react";
+import { Sonnar } from "@/components/ui/Sonnar";
 
 export default function ProfilePage() {
   // Fake data for UI work. Wire to real API fields later.
@@ -23,6 +31,9 @@ export default function ProfilePage() {
   } as const;
 
   const evidence = [
+    { title: "Sony A7R IV", date: "Oct 12", tone: "bg-[linear-gradient(135deg,#111827,#4b5563)]" },
+    { title: "Osprey 65L Pack", date: "Sep 28", tone: "bg-[linear-gradient(135deg,#0f172a,#1f2937)]" },
+    { title: "Epson 4K Projector", date: "Sep 15", tone: "bg-[linear-gradient(135deg,#0b0b0e,#1f2937)]" },
     { title: "Sony A7R IV", date: "Oct 12", tone: "bg-[linear-gradient(135deg,#111827,#4b5563)]" },
     { title: "Osprey 65L Pack", date: "Sep 28", tone: "bg-[linear-gradient(135deg,#0f172a,#1f2937)]" },
     { title: "Epson 4K Projector", date: "Sep 15", tone: "bg-[linear-gradient(135deg,#0b0b0e,#1f2937)]" },
@@ -50,6 +61,18 @@ export default function ProfilePage() {
     "Home Address Verified",
   ] as const;
 
+  const [isSharing, setIsSharing] = useState(true);
+  const [viewAllLogs, setViewAllLogs] = useState(false);
+
+  const handleShare = () => {
+    setIsSharing(false);
+    navigator.clipboard.writeText(window.location.href);
+    Sonnar.toast.success("Link copied to clipboard");
+    setTimeout(() => {
+      setIsSharing(true);
+    }, 2000);
+  }
+
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto bg-[#F6F6F6] px-5 pb-28 pt-[max(1rem,env(safe-area-inset-top))]"
@@ -58,23 +81,26 @@ export default function ProfilePage() {
       <div className="mx-auto w-full max-w-5xl">
         {/* Profile hero */}
         <div
-          className="grid grid-cols-1 gap-6 rounded-[24px] border border-[#EEEEEE] bg-white p-7 shadow-[0_18px_60px_rgba(0,0,0,0.12)] lg:grid-cols-[340px_1fr] lg:gap-8 lg:p-8"
+          className="grid grid-cols-1 gap-6 rounded-[24px] border border-[#EEEEEE] bg-white p-7 shadow-[0_1px_1px_0px_rgba(0,0,0,0.12)] lg:grid-cols-[340px_1fr] lg:gap-8 lg:p-8"
           style={{ borderRadius: radius.lg }}
         >
           <div className="flex flex-col items-center text-center lg:items-center lg:text-center">
+            {/* Avatar */}
             <div
-              className="relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-[#0b0b0e] to-[#4b5563] shadow-[0_18px_50px_rgba(0,0,0,0.25)]"
+              className="relative flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br from-[#0b0b0e] to-[#4b5563] shadow-[0_18px_50px_rgba(0,0,0,0.25)]"
               style={{ borderRadius: radius.full }}
             >
               <span className="text-4xl font-extrabold text-white">{profile.name.split(" ")[0]?.[0] ?? "J"}</span>
               <span className="absolute bottom-2 right-2 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
             </div>
 
+            {/* Name */}
             <div className="mt-4">
               <p className="text-[22px] font-bold tracking-tight text-black">{profile.name}</p>
               <p className="mt-1 text-xs font-medium text-[#7E7576]">{profile.trustedSince}</p>
             </div>
 
+            {/* Badges */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               {profile.badges.map((b) => (
                 <span
@@ -86,27 +112,38 @@ export default function ProfilePage() {
               ))}
             </div>
 
+            {/* Share Profile */}
             <button
+              onClick={handleShare}
               type="button"
-              className="mt-5 flex w-full max-w-[280px] items-center justify-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(0,0,0,0.35)]"
+              className="mt-5 flex w-full max-w-[280px] items-center justify-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-[0_1px_1px_0px_rgba(0,0,0,0.18)] cursor-pointer hover:bg-gray-800 active:scale-95 transition-all duration-200"
             >
-              Share Profile <span className="text-white/80">↗</span>
+              {
+                isSharing ? (
+                  <>
+                  Share Profile <span className="text-white/80">↗</span>
+                  </>
+                ) : (
+                  <>
+                  Link Copied!
+                  </>
+                )
+              }
             </button>
           </div>
 
           <div className="flex flex-col">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr] lg:items-start">
-              <div className="rounded-[18px] bg-gradient-to-b from-[#0b0b0e] to-[#111827] px-6 py-5 shadow-[0_16px_45px_rgba(0,0,0,0.18)]">
-                <p className="text-[11px] font-semibold tracking-wider text-white/60">KARMA SCORE</p>
+              <div className="rounded-[18px] bg-linear-to-b from-[#0b0b0e] to-[#111827] px-6 py-5 shadow-[0_1px_1px_0px_rgba(0,0,0,0.18)] h-full flex flex-col justify-between">
+                <p className="text-sm font-medium tracking-wider text-white/60">KARMA SCORE</p>
                 <div className="mt-1 flex items-end justify-between">
                   <span className="text-[50px] font-extrabold leading-none text-white">{profile.karmaScore.toFixed(2)}</span>
-                  <span className="mb-2 rounded-full bg-[#F59E0B]/15 p-2 text-[#F59E0B]">
-                    <Star size={18} weight="fill" />
-                  </span>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-[12px] font-semibold text-[#F59E0B]">
-                  <Star size={14} weight="fill" className="text-[#F59E0B]" />
-                  {profile.karmaCaption}
+                  <PiStarFill size={14} className="text-[#F59E0B]" />
+                  <p className="text-sm font-medium tracking-wider text-white/60">
+                    {profile.karmaCaption}
+                  </p>
                 </div>
               </div>
 
@@ -138,22 +175,19 @@ export default function ProfilePage() {
               <p className="mt-1 text-xs font-medium text-[#7E7576]">Verified video handovers and condition checks</p>
             </div>
 
-            <Link href="#" className="shrink-0 text-sm font-semibold text-black underline">
-              View All Logs
-            </Link>
+            <button onClick={() => setViewAllLogs(!viewAllLogs)} className="shrink-0 text-sm font-semibold text-black underline cursor-pointer">
+              {viewAllLogs ? "Hide All Logs" : "View All Logs"}
+            </button>
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {evidence.map((e) => (
+            {evidence.slice(0, viewAllLogs ? evidence.length : 3).map((e) => (
               <div
                 key={e.title}
                 className={`relative overflow-hidden rounded-[18px] ${e.tone} shadow-[0_18px_50px_rgba(0,0,0,0.12)]`}
                 style={{ height: 160 }}
               >
                 <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_30%_120%,#ffffff_0%,transparent_55%)]" />
-                <div className="absolute left-4 top-4 rounded-xl bg-black/30 p-2 text-white/90">
-                  <VideoCamera size={20} weight="fill" />
-                </div>
                 <div className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur">
                   {e.title} <span className="ml-2 font-semibold text-white/80">· {e.date}</span>
                 </div>
@@ -180,7 +214,7 @@ export default function ProfilePage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="truncate text-sm font-semibold text-black">{f.name}</span>
-                          <Star size={14} weight="fill" className="text-[#F59E0B]" />
+                          <PiStarFill size={14} className="text-[#F59E0B]" />
                         </div>
                       </div>
                     </div>
@@ -199,7 +233,7 @@ export default function ProfilePage() {
               {trustMatrix.map((t) => (
                 <div key={t} className="flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
-                    <CheckCircle size={16} weight="fill" className="text-[#22C55E]" />
+                    <PiCheckCircleFill size={16} className="text-[#22C55E]" />
                   </span>
                   <span className="text-sm font-medium text-black">{t}</span>
                 </div>
@@ -214,14 +248,14 @@ export default function ProfilePage() {
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6] shadow-[0_10px_26px_rgba(0,0,0,0.03)]"
                   aria-label="Phone connected"
                 >
-                  <Phone size={18} />
+                  <PiPhone size={18} />
                 </button>
                 <button
                   type="button"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6] shadow-[0_10px_26px_rgba(0,0,0,0.03)]"
                   aria-label="Chat connected"
                 >
-                  <ChatCircle size={18} />
+                  <PiChatCircle size={18} />
                 </button>
               </div>
             </div>

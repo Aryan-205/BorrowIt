@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Star } from "@phosphor-icons/react";
+import { PiHeart, PiStarFill } from "react-icons/pi";
 import { Chip } from "@/components/ui/Chip";
 import { KarmaStars } from "@/components/ui/KarmaStars";
 import { radius } from "@/lib/theme";
@@ -96,7 +96,7 @@ export function ItemCard({
           aria-label="Save to wishlist"
           onClick={(e) => e.preventDefault()}
         >
-          <Heart size={18} className="text-black" />
+          <PiHeart size={18} className="text-black" />
         </button>
         <Link href={`/item/${item.id}`} className="flex min-h-0 flex-1 flex-col">
           <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#F3F4F6]">
@@ -116,7 +116,7 @@ export function ItemCard({
             <div className="flex items-start justify-between gap-2">
               <p className="line-clamp-2 min-w-0 flex-1 text-sm font-bold leading-snug text-black sm:text-[15px]">{item.title}</p>
               <span className="flex shrink-0 items-center gap-0.5 text-sm font-semibold text-black">
-                <Star size={16} weight="fill" className="text-amber-400" />
+                <PiStarFill size={16} className="text-amber-400" />
                 {rating}
               </span>
             </div>

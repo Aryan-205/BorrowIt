@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapTrifold, Rows } from "@phosphor-icons/react";
+import { PiCaretDownBold } from "react-icons/pi";
 import { ItemCard } from "@/components/ItemCard";
 import { DiscoverMapPanel } from "@/components/DiscoverMap";
 import { DiscoverFilterBar } from "@/components/discover/DiscoveryFilterBar";
@@ -10,7 +10,7 @@ import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { apiUrl } from "@/lib/env";
 
 export default function DiscoverPage() {
-  const [mobileView, setMobileView] = useState<"list" | "map">("list");
+  const [hubExpanded, setHubExpanded] = useState(true);
 
   const { data, isLoading } = useQuery({
     queryKey: ["items-near"],
@@ -40,23 +40,51 @@ export default function DiscoverPage() {
   }, [items]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-8.5rem)] lg:flex-row lg:overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col-reverse lg:flex-row lg:overflow-hidden">
       <section
-        className={`flex min-h-0 w-full flex-col overflow-y-auto bg-white lg:w-1/2 lg:max-w-[50%] lg:border-r lg:border-[#EEEEEE] ${
-          mobileView === "map" ? "hidden lg:flex" : "flex"
+        className={`flex w-full flex-col bg-white lg:min-h-0 lg:w-1/2 lg:max-w-[50%] lg:flex-1 ${
+          hubExpanded ? "min-h-0 flex-1 overflow-y-auto" : "shrink-0 overflow-hidden"
         }`}
       >
-        <div className="px-4 py-4 md:px-6 lg:px-8 lg:py-6">
-          <h1 className="text-2xl font-bold tracking-tight text-black md:text-3xl">Discovery Hub</h1>
-          <p className="mt-1 text-sm text-[#6B7280] md:text-[15px]">
-            {items.length} listings in your search area
-          </p>
-          <div className="mt-4 md:mt-5">
-            <DiscoverFilterBar />
+        <div
+          className={`shrink-0 px-4 md:px-6 lg:px-8 lg:py-6 ${
+            hubExpanded ? "py-4" : "border-t border-[#EEEEEE] py-3"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-black md:text-3xl">
+              Discovery Hub
+            </h1>
+            <button
+              type="button"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-md transition-transform active:scale-95 lg:hidden"
+              aria-label={hubExpanded ? "Collapse discovery panel" : "Expand discovery panel"}
+              aria-expanded={hubExpanded}
+              onClick={() => setHubExpanded((open) => !open)}
+            >
+              <PiCaretDownBold
+                size={18}
+                className={`transition-transform duration-200 ${hubExpanded ? "" : "rotate-180"}`}
+                aria-hidden
+              />
+            </button>
+          </div>
+
+          <div className={hubExpanded ? "block" : "hidden lg:block"}>
+            <p className="mt-1 text-sm text-[#6B7280] md:text-[15px]">
+              {items.length} listings in your search area
+            </p>
+            <div className="mt-4 md:mt-5">
+              <DiscoverFilterBar />
+            </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 px-4 pb-28 pt-0 md:px-6 lg:px-8 lg:pb-8">
+        <div
+          className={`min-h-0 flex-1 px-4 pt-0 md:px-6 lg:flex lg:px-8 lg:pb-8 ${
+            hubExpanded ? "flex flex-col pb-28" : "hidden lg:flex lg:flex-col"
+          }`}
+        >
           {isLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[1, 2, 3, 4].map((k) => (
@@ -80,43 +108,18 @@ export default function DiscoverPage() {
       </section>
 
       <section
-        className={`relative flex w-full flex-1 flex-col lg:w-1/2 lg:min-h-0 ${
-          mobileView === "list" ? "hidden lg:flex" : "flex min-h-[55dvh]"
+        className={`relative flex h-full min-h-0 w-full flex-1 flex-col lg:w-1/2 lg:pr-8 lg:py-8 bg-white ${
+          hubExpanded ? "min-h-[45dvh] lg:min-h-0" : ""
         }`}
       >
-        <DiscoverMapPanel items={items} itemCount={items.length} avgPrice={avgPrice || 32} />
+        {/* <DiscoverMapPanel
+          items={items}
+          itemCount={items.length}
+          avgPrice={avgPrice || 32}
+          edgeToEdge={!hubExpanded}
+          layoutKey={hubExpanded}
+        /> */}
       </section>
-
-      <div
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom)+12px)] left-1/2 z-30 flex -translate-x-1/2 gap-1 rounded-full border border-[#E5E7EB] bg-white p-1 shadow-lg lg:hidden"
-        role="tablist"
-        aria-label="View mode"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mobileView === "list"}
-          className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold ${
-            mobileView === "list" ? "bg-black text-white" : "text-[#4B5563]"
-          }`}
-          onClick={() => setMobileView("list")}
-        >
-          <Rows size={18} weight="bold" />
-          List
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mobileView === "map"}
-          className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold ${
-            mobileView === "map" ? "bg-black text-white" : "text-[#4B5563]"
-          }`}
-          onClick={() => setMobileView("map")}
-        >
-          <MapTrifold size={18} weight="bold" />
-          Map
-        </button>
-      </div>
     </div>
   );
 }

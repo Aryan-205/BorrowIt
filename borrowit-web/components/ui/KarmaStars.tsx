@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "@phosphor-icons/react";
+import { PiStarFill } from "react-icons/pi";
 
 export function KarmaStars({
   score,
@@ -13,7 +13,7 @@ export function KarmaStars({
 }) {
   return (
     <span className="inline-flex items-center gap-0.5">
-      <Star weight="fill" color="#F59E0B" style={{ width: size, height: size }} />
+      <PiStarFill color="#F59E0B" size={size} aria-hidden />
       <span className="font-semibold text-black" style={{ fontSize: size }}>
         {score.toFixed(1)}
       </span>

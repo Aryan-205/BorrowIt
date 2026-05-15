@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ImageSquare, X } from "@phosphor-icons/react";
+import { PiImageSquare, PiXBold } from "react-icons/pi";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { spacing, radius } from "@/lib/theme";
@@ -104,7 +104,7 @@ export default function LendPage() {
                   className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white"
                   onClick={() => setImages((prev) => prev.filter((_, j) => j !== i))}
                 >
-                  <X size={12} weight="bold" />
+                  <PiXBold size={12} />
                 </button>
               </div>
             ))}
@@ -112,7 +112,7 @@ export default function LendPage() {
               className="flex h-[90px] w-[90px] cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[#EEEEEE] bg-[#F6F6F6]"
               style={{ borderRadius: radius.sm }}
             >
-              <ImageSquare size={28} className="text-[#7E7576]" />
+              <PiImageSquare size={28} className="text-[#7E7576]" />
               <span className="text-xs font-medium text-[#7E7576]">Add Photo</span>
               <input type="file" accept="image/*" multiple className="hidden" onChange={onPickFiles} />
             </label>

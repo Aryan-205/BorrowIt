@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CalendarBlank, MapPin, ShieldCheck } from "@phosphor-icons/react";
+import {
+  PiArrowLeftBold,
+  PiCalendarBlank,
+  PiMapPin,
+  PiShieldCheckFill,
+} from "react-icons/pi";
 import { authClient } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -109,7 +114,7 @@ export default function ItemDetailPage() {
           className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white"
           aria-label="Back"
         >
-          <ArrowLeft size={22} weight="bold" />
+          <PiArrowLeftBold size={22} />
         </button>
         {item.mediaUrls?.length > 1 && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
@@ -152,11 +157,11 @@ export default function ItemDetailPage() {
             <p className="font-semibold text-black">{item.ownerName ?? "Owner"}</p>
             <KarmaStars score={item.ownerKarma ?? 5} count={item.ownerKarmaCount ?? 0} />
           </div>
-          {item.ownerIsVerified && <ShieldCheck size={20} weight="fill" className="shrink-0 text-[#2563EB]" />}
+          {item.ownerIsVerified && <PiShieldCheckFill size={20} className="shrink-0 text-[#2563EB]" />}
         </div>
 
         <div className="flex items-center gap-1.5 text-xs text-[#7E7576]">
-          <MapPin size={16} />
+          <PiMapPin size={16} />
           {item.lat != null && item.lng != null ? (
             <span>
               {item.lat.toFixed(4)}, {item.lng.toFixed(4)}
@@ -165,7 +170,7 @@ export default function ItemDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 rounded-lg bg-[#EFF6FF] p-4" style={{ borderRadius: radius.sm }}>
-          <ShieldCheck size={20} weight="fill" className="shrink-0 text-[#2563EB]" />
+          <PiShieldCheckFill size={20} className="shrink-0 text-[#2563EB]" />
           <p className="flex-1 text-[13px] font-semibold text-[#2563EB]">
             ₹{item.securityDeposit} refundable security deposit
           </p>
@@ -187,7 +192,7 @@ export default function ItemDetailPage() {
               −
             </button>
             <div className="flex flex-1 items-center justify-center gap-1.5">
-              <CalendarBlank size={16} className="text-[#4C4546]" />
+              <PiCalendarBlank size={16} className="text-[#4C4546]" />
               <span className="font-semibold text-black">
                 {days} day{days !== 1 ? "s" : ""}
               </span>

@@ -39,3 +39,14 @@ body {
 .animate-borrowit-pulse {
   animation: borrowit-pulse 1.6s ease-in-out infinite;
 }
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  font-family: inherit;
+  background: #1a1a1e;
+}
+
+.leaflet-control-attribution {
+  display: none;
+}

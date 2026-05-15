@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { ChatCircle, QrCode } from "@phosphor-icons/react";
+import { PiChatCircle, PiQrCodeFill } from "react-icons/pi";
 import { authClient } from "@/lib/auth";
 import { Chip } from "@/components/ui/Chip";
 import { spacing, radius } from "@/lib/theme";
@@ -101,7 +101,7 @@ export default function RentalsPage() {
                     href={`/chat/${item.id}`}
                     className="inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-[#EEEEEE] px-3.5 py-2 text-[13px] font-semibold text-black"
                   >
-                    <ChatCircle size={18} />
+                    <PiChatCircle size={18} />
                     Chat
                   </Link>
                   {item.status === "PENDING" && isOwner && (
@@ -109,7 +109,7 @@ export default function RentalsPage() {
                       href={`/handover/lender/${item.id}`}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-black px-3.5 py-2 text-[13px] font-semibold text-white"
                     >
-                      <QrCode size={18} weight="fill" className="text-white" />
+                      <PiQrCodeFill size={18} className="text-white" />
                       Show QR
                     </Link>
                   )}
@@ -118,7 +118,7 @@ export default function RentalsPage() {
                       href={`/handover/borrower/${item.id}`}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-black px-3.5 py-2 text-[13px] font-semibold text-white"
                     >
-                      <QrCode size={18} weight="fill" className="text-white" />
+                      <PiQrCodeFill size={18} className="text-white" />
                       Scan QR
                     </Link>
                   )}

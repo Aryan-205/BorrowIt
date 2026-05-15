@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChatCircle, CheckCircle, QrCode } from "@phosphor-icons/react";
+import {
+  PiArrowLeftBold,
+  PiChatCircle,
+  PiCheckCircleFill,
+  PiQrCodeFill,
+} from "react-icons/pi";
 import { radius } from "@/lib/theme";
 import { apiUrl } from "@/lib/env";
 import type { RentalClient } from "@/lib/rentalTypes";
@@ -95,7 +100,7 @@ export default function LenderHandoverPage() {
   if (verified) {
     return (
       <div className="flex min-h-[70dvh] flex-col items-center justify-center gap-6 px-5 py-12">
-        <CheckCircle size={80} weight="fill" className="text-emerald-500" />
+        <PiCheckCircleFill size={80} className="text-emerald-500" />
         <h1 className="text-center text-2xl font-bold text-black md:text-[28px]">Handover complete</h1>
         <p className="max-w-sm text-center text-[15px] text-[#6B7280]">
           The borrower has scanned and accepted the item.
@@ -122,7 +127,7 @@ export default function LenderHandoverPage() {
         href="/rentals"
         className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#4B5563] hover:text-black md:mb-8"
       >
-        <ArrowLeft size={18} weight="bold" />
+        <PiArrowLeftBold size={18} />
         Back to rentals
       </Link>
 
@@ -155,12 +160,12 @@ export default function LenderHandoverPage() {
               <img src={qrSrc} alt="Handover QR code" className="aspect-square w-full rounded-lg object-contain" width={240} height={240} />
             ) : (
               <div className="flex aspect-square flex-col items-center justify-center gap-2 bg-[#FAFAFA]">
-                <QrCode size={72} weight="fill" className="text-black" />
+                <PiQrCodeFill size={72} className="text-black" />
                 <span className="font-mono text-lg font-bold tracking-widest text-black">{token}</span>
               </div>
             )}
             <div className="absolute -right-1 -top-1 flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md">
-              <CheckCircle size={20} weight="fill" />
+              <PiCheckCircleFill size={20} />
             </div>
           </div>
           {token ? (
@@ -199,7 +204,7 @@ export default function LenderHandoverPage() {
               <p className="text-xs text-[#6B7280]">Verified Borrower · 4.9 ★</p>
             </div>
             <button type="button" className="shrink-0 rounded-lg border border-[#D1D5DB] bg-white p-2.5 text-black" aria-label="Message">
-              <ChatCircle size={20} />
+              <PiChatCircle size={20} />
             </button>
           </div>
         </div>
