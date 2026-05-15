@@ -85,7 +85,7 @@ export default function LendPage() {
 
   return (
     <div
-      className="min-h-0 flex-1 overflow-y-auto bg-white px-5 pb-12 pt-[max(1rem,env(safe-area-inset-top))]"
+      className="min-h-0 flex-1 overflow-y-auto bg-white px-5 pb-12 pt-[max(1rem,env(safe-area-inset-top))] lg:max-w-2xl lg:mx-auto"
       style={{ padding: spacing.margin, gap: spacing.md }}
     >
       <h1 className="text-[28px] font-bold tracking-tight text-black">List an Item</h1>
@@ -141,7 +141,7 @@ export default function LendPage() {
                 key={cat}
                 type="button"
                 onClick={() => setCategory(cat)}
-                className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold ${
+                className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold cursor-pointer ${
                   category === cat ? "border-black bg-black text-white" : "border-[#EEEEEE] text-[#4C4546]"
                 }`}
                 style={{ borderWidth: 1.5 }}
@@ -160,6 +160,7 @@ export default function LendPage() {
               onChange={(e) => setDailyRate(e.target.value)}
               inputMode="decimal"
               placeholder="150"
+              type="number"
             />
           </div>
           <div className="min-w-0 flex-1">
@@ -169,6 +170,7 @@ export default function LendPage() {
               onChange={(e) => setDeposit(e.target.value)}
               inputMode="decimal"
               placeholder="500"
+              type="number"
             />
           </div>
         </div>

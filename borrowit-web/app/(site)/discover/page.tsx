@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MapTrifold, Rows } from "@phosphor-icons/react";
 import { ItemCard } from "@/components/ItemCard";
-import { DiscoverFilterBar, DiscoverMapPanel } from "@/components/DiscoverMap";
+import { DiscoverMapPanel } from "@/components/DiscoverMap";
+import { DiscoverFilterBar } from "@/components/discover/DiscoveryFilterBar";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { apiUrl } from "@/lib/env";
 

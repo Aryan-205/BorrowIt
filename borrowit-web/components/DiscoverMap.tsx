@@ -1,6 +1,6 @@
 "use client";
 
-import { CurrencyDollar, Faders, Lightning, MapPin, Minus, Plus, Crosshair, Info } from "@phosphor-icons/react";
+import { Plus, Minus, Crosshair, Info } from "@phosphor-icons/react";
 
 type MapItem = { id: string; dailyRate: number; lat: number; lng: number };
 
@@ -92,41 +92,6 @@ export function DiscoverMapPanel({
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-export function DiscoverFilterBar() {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-black px-4 py-2 text-xs font-semibold text-white sm:text-sm"
-      >
-        <Lightning size={16} weight="fill" className="text-amber-300" />
-        Available Now
-      </button>
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D1D5DB] bg-white px-4 py-2 text-xs font-semibold text-black sm:text-sm"
-      >
-        <MapPin size={16} />
-        Distance
-      </button>
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D1D5DB] bg-white px-4 py-2 text-xs font-semibold text-black sm:text-sm"
-      >
-        <CurrencyDollar size={16} weight="bold" />
-        Price
-      </button>
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D1D5DB] bg-white px-4 py-2 text-xs font-semibold text-black sm:text-sm"
-      >
-        <Faders size={16} />
-        More Filters
-      </button>
     </div>
   );
 }

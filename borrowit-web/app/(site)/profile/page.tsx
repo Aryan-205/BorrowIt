@@ -1,157 +1,233 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, SignOut, Star, Video } from "@phosphor-icons/react";
-import { authClient } from "@/lib/auth";
+import { ChatCircle, CheckCircle, Phone, Star, VideoCamera } from "@phosphor-icons/react";
 import { spacing, radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
-import type { RentalClient } from "@/lib/rentalTypes";
 
 export default function ProfilePage() {
-  const { data: session } = authClient.useSession();
+  // Fake data for UI work. Wire to real API fields later.
+  const profile = {
+    name: "Jane Doe",
+    trustedSince: "Trusted Lender since 2023",
+    badges: ["Pro Lender", "Identity Verified"],
+    karmaScore: 4.95,
+    karmaCaption: "Top 1% of community",
+    stats: [
+      { value: "142", label: "Handovers" },
+      { value: "100%", label: "Return Rate" },
+      { value: "~15m", label: "Response" },
+      { value: "8", label: "Badges" },
+    ],
+    bio:
+      "Outdoor enthusiast and tech collector. I believe the future is circular. I love sharing my high-quality gear with people who will appreciate it as much as I do. Most active on weekends for handovers!",
+  } as const;
 
-  const { data } = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/users/me"), { credentials: "include" });
-      return res.json() as Promise<{
-        user?: {
-          id?: string;
-          karmaScore?: number;
-          karmaCount?: number;
-          rentalCount?: number;
-          completedRentals?: number;
-          reliabilityPct?: number;
-          itemCount?: number;
-          isVerified?: boolean;
-        };
-      }>;
+  const evidence = [
+    { title: "Sony A7R IV", date: "Oct 12", tone: "bg-[linear-gradient(135deg,#111827,#4b5563)]" },
+    { title: "Osprey 65L Pack", date: "Sep 28", tone: "bg-[linear-gradient(135deg,#0f172a,#1f2937)]" },
+    { title: "Epson 4K Projector", date: "Sep 15", tone: "bg-[linear-gradient(135deg,#0b0b0e,#1f2937)]" },
+  ] as const;
+
+  const recentFeedback = [
+    {
+      name: "Marcus T.",
+      time: "2 days ago",
+      text:
+        '"Jane was incredibly responsive. The camera gear was in perfect condition and she even included an extra battery. Highly recommend!"',
     },
-  });
-
-  const { data: rentalsData } = useQuery({
-    queryKey: ["my-rentals-profile"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/rentals"), { credentials: "include" });
-      return res.json() as Promise<{ rentals: RentalClient[] }>;
+    {
+      name: "Sarah K.",
+      time: "1 week ago",
+      text:
+        '"Smooth transaction. Met right on time and she explained some of the settings for the projector. Awesome lender!"',
     },
-  });
+  ] as const;
 
-  const user = data?.user;
-  const rentals: RentalClient[] = rentalsData?.rentals ?? [];
-  const evidenceRentals = rentals.filter((r) => r.pickupVideoUrl || r.returnVideoUrl);
-
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    window.location.href = "/login";
-  };
-
-  const displayName = session?.user?.name ?? "You";
-  const email = session?.user?.email ?? `${user?.id ?? "demo"}@borrowit.local`;
+  const trustMatrix = [
+    "Biometric ID Verified",
+    "Linked LinkedIn Profile",
+    "Phone & Email Confirmed",
+    "Home Address Verified",
+  ] as const;
 
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto bg-[#F6F6F6] px-5 pb-28 pt-[max(1rem,env(safe-area-inset-top))]"
       style={{ gap: spacing.lg }}
     >
-      <div
-        className="flex items-center gap-4 rounded-2xl border border-[#EEEEEE] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)]"
-        style={{ borderRadius: radius.md }}
-      >
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-black text-[22px] font-bold text-white">
-          {displayName[0]?.toUpperCase() ?? "?"}
-        </div>
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <div className="flex items-center gap-1.5">
-            <p className="truncate text-xl font-semibold text-black">{displayName}</p>
-            {user?.isVerified && <CheckCircle size={18} weight="fill" className="shrink-0 text-[#2563EB]" />}
-          </div>
-          <p className="truncate text-xs text-[#7E7576]">{email}</p>
-        </div>
-        {session && (
-          <button type="button" onClick={handleSignOut} className="shrink-0 p-2 text-[#7E7576]" aria-label="Sign out">
-            <SignOut size={20} />
-          </button>
-        )}
-      </div>
+      <div className="mx-auto w-full max-w-5xl">
+        {/* Profile hero */}
+        <div
+          className="grid grid-cols-1 gap-6 rounded-[24px] border border-[#EEEEEE] bg-white p-7 shadow-[0_18px_60px_rgba(0,0,0,0.12)] lg:grid-cols-[340px_1fr] lg:gap-8 lg:p-8"
+          style={{ borderRadius: radius.lg }}
+        >
+          <div className="flex flex-col items-center text-center lg:items-center lg:text-center">
+            <div
+              className="relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-[#0b0b0e] to-[#4b5563] shadow-[0_18px_50px_rgba(0,0,0,0.25)]"
+              style={{ borderRadius: radius.full }}
+            >
+              <span className="text-4xl font-extrabold text-white">{profile.name.split(" ")[0]?.[0] ?? "J"}</span>
+              <span className="absolute bottom-2 right-2 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+            </div>
 
-      <div
-        className="mt-6 flex flex-col items-center gap-1 rounded-2xl bg-black px-8 py-8 text-center"
-        style={{ borderRadius: radius.md }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-[52px] font-extrabold tracking-tight text-white">
-            {user?.karmaScore?.toFixed(1) ?? "5.0"}
-          </span>
-          <Star size={28} weight="fill" className="text-[#F59E0B]" />
+            <div className="mt-4">
+              <p className="text-[22px] font-bold tracking-tight text-black">{profile.name}</p>
+              <p className="mt-1 text-xs font-medium text-[#7E7576]">{profile.trustedSince}</p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {profile.badges.map((b) => (
+                <span
+                  key={b}
+                  className="rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1 text-[11px] font-semibold text-[#4B5563]"
+                >
+                  {b}
+                </span>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="mt-5 flex w-full max-w-[280px] items-center justify-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(0,0,0,0.35)]"
+            >
+              Share Profile <span className="text-white/80">↗</span>
+            </button>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr] lg:items-start">
+              <div className="rounded-[18px] bg-gradient-to-b from-[#0b0b0e] to-[#111827] px-6 py-5 shadow-[0_16px_45px_rgba(0,0,0,0.18)]">
+                <p className="text-[11px] font-semibold tracking-wider text-white/60">KARMA SCORE</p>
+                <div className="mt-1 flex items-end justify-between">
+                  <span className="text-[50px] font-extrabold leading-none text-white">{profile.karmaScore.toFixed(2)}</span>
+                  <span className="mb-2 rounded-full bg-[#F59E0B]/15 p-2 text-[#F59E0B]">
+                    <Star size={18} weight="fill" />
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-[12px] font-semibold text-[#F59E0B]">
+                  <Star size={14} weight="fill" className="text-[#F59E0B]" />
+                  {profile.karmaCaption}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {profile.stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center justify-center rounded-2xl border border-[#EEEEEE] bg-white px-4 py-4 shadow-[0_10px_26px_rgba(0,0,0,0.04)]"
+                  >
+                    <span className="text-[20px] font-bold text-black">{s.value}</span>
+                    <span className="mt-0.5 text-[12px] font-medium text-[#7E7576]">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <p className="text-lg font-semibold text-black">Bio</p>
+              <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{profile.bio}</p>
+            </div>
+          </div>
         </div>
-        <p className="text-xl font-semibold text-white/70">Karma Score</p>
-        <p className="text-xs text-white/50">{user?.karmaCount ?? 0} reviews</p>
-      </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" style={{ gap: spacing.sm }}>
-        {[
-          { label: "Total Rentals", value: user?.rentalCount ?? 0 },
-          { label: "Completed", value: user?.completedRentals ?? 0 },
-          { label: "Reliability", value: `${user?.reliabilityPct ?? 100}%` },
-          { label: "Items Listed", value: user?.itemCount ?? 0 },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="flex flex-col items-center gap-0.5 rounded-2xl border border-[#EEEEEE] bg-white p-4 text-center"
-            style={{ borderRadius: radius.md }}
-          >
-            <span className="text-xl font-semibold text-black">{s.value}</span>
-            <span className="text-center text-xs text-[#7E7576]">{s.label}</span>
-          </div>
-        ))}
-      </div>
+        {/* Evidence Vault */}
+        <section className="mt-8">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h2 className="text-[22px] font-bold text-black">Evidence Vault</h2>
+              <p className="mt-1 text-xs font-medium text-[#7E7576]">Verified video handovers and condition checks</p>
+            </div>
 
-      <section className="mt-8 space-y-2">
-        <h2 className="text-xl font-semibold text-black">Evidence Vault</h2>
-        <p className="text-xs text-[#7E7576]">Inspection videos from your rentals</p>
-        {evidenceRentals.length === 0 ? (
-          <div
-            className="flex flex-col items-center gap-2 rounded-2xl border border-[#EEEEEE] bg-white p-10"
-            style={{ borderRadius: radius.md }}
-          >
-            <Video size={32} className="text-[#7E7576]" />
-            <p className="text-[15px] text-[#7E7576]">No inspection videos yet</p>
+            <Link href="#" className="shrink-0 text-sm font-semibold text-black underline">
+              View All Logs
+            </Link>
           </div>
-        ) : (
-          <ul className="space-y-2">
-            {evidenceRentals.map((r) => (
-              <li
-                key={r.id}
-                className="flex items-center gap-4 rounded-2xl border border-[#EEEEEE] bg-white p-4"
-                style={{ borderRadius: radius.md }}
+
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {evidence.map((e) => (
+              <div
+                key={e.title}
+                className={`relative overflow-hidden rounded-[18px] ${e.tone} shadow-[0_18px_50px_rgba(0,0,0,0.12)]`}
+                style={{ height: 160 }}
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#F6F6F6]">
-                  <Video size={24} weight="fill" className="text-black" />
+                <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_30%_120%,#ffffff_0%,transparent_55%)]" />
+                <div className="absolute left-4 top-4 rounded-xl bg-black/30 p-2 text-white/90">
+                  <VideoCamera size={20} weight="fill" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-black">{r.itemTitle}</p>
-                  <p className="text-xs text-[#22C55E]">
-                    {r.pickupVideoUrl ? "✓ Pickup" : ""}
-                    {r.pickupVideoUrl && r.returnVideoUrl ? "  " : ""}
-                    {r.returnVideoUrl ? "✓ Return" : ""}
-                  </p>
+                <div className="absolute bottom-3 left-3 rounded-full bg-black/50 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur">
+                  {e.title} <span className="ml-2 font-semibold text-white/80">· {e.date}</span>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
-        )}
-      </section>
+          </div>
+        </section>
 
-      {!session && (
-        <p className="mt-6 text-center text-sm text-[#7E7576]">
-          <Link href="/login" className="font-semibold text-black underline">
-            Sign in
-          </Link>{" "}
-          to sync your account when your API exposes better-auth.
-        </p>
-      )}
+        {/* Recent Feedback + Trust Matrix */}
+        <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+          <section>
+            <h3 className="text-[18px] font-bold text-black">Recent Feedback</h3>
+            <div className="mt-3 space-y-3">
+              {recentFeedback.map((f) => (
+                <div
+                  key={f.name}
+                  className="rounded-2xl bg-white p-5 shadow-[0_12px_35px_rgba(0,0,0,0.04)] ring-1 ring-[#EEEEEE]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6] text-sm font-bold text-black/80">
+                        {f.name[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold text-black">{f.name}</span>
+                          <Star size={14} weight="fill" className="text-[#F59E0B]" />
+                        </div>
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-xs font-medium text-[#7E7576]">{f.time}</span>
+                  </div>
+                  <p className="mt-3 text-[13px] leading-relaxed text-[#4B5563]">{f.text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <aside className="rounded-[22px] bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.10)] ring-1 ring-[#EEEEEE]">
+            <h3 className="text-[18px] font-bold text-black">Trust Matrix</h3>
+
+            <div className="mt-4 space-y-3">
+              {trustMatrix.map((t) => (
+                <div key={t} className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
+                    <CheckCircle size={16} weight="fill" className="text-[#22C55E]" />
+                  </span>
+                  <span className="text-sm font-medium text-black">{t}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 border-t border-[#EEEEEE] pt-4">
+              <p className="text-xs font-bold tracking-wide text-[#7E7576]">SOCIAL CONNECTIVITY</p>
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6] shadow-[0_10px_26px_rgba(0,0,0,0.03)]"
+                  aria-label="Phone connected"
+                >
+                  <Phone size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F3F4F6] shadow-[0_10px_26px_rgba(0,0,0,0.03)]"
+                  aria-label="Chat connected"
+                >
+                  <ChatCircle size={18} />
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
     </div>
   );
 }

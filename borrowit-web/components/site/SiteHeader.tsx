@@ -53,7 +53,7 @@ export function SiteHeader({
             <input
               type="search"
               placeholder={searchPlaceholder}
-              className="w-full rounded-full border border-[#E5E7EB] bg-[#F3F4F6] py-2.5 pl-10 pr-4 text-sm text-black outline-none ring-black/10 placeholder:text-[#7E7576] focus:border-black focus:ring-2"
+              className="w-full rounded-full border border-[#E5E7EB] bg-[#F3F4F6] py-2.5 pl-10 pr-4 text-sm text-black outline-none ring-black/10 placeholder:text-[#7E7576] focus:border-black focus:ring-2 hover:ring-1"
               aria-label="Search"
             />
           </div>
@@ -76,15 +76,15 @@ export function SiteHeader({
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-0">
-            <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] sm:flex" aria-label="Notifications">
+            <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] sm:flex cursor-pointer active:scale-95 transition-all duration-200" aria-label="Notifications">
               <Bell size={22} />
             </button>
-            <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] md:flex" aria-label="Wishlist">
+            <button type="button" className="hidden rounded-full p-2 text-black hover:bg-[#F3F4F6] md:flex cursor-pointer active:scale-95 transition-all duration-200" aria-label="Wishlist">
               <Heart size={22} />
             </button>
             <Link
               href="/lend"
-              className="hidden rounded-full bg-black px-4 py-2 text-xs font-semibold text-white sm:inline-flex md:px-5 md:text-sm"
+              className="hidden rounded-full bg-black px-4 py-2 text-xs font-semibold text-white sm:inline-flex md:px-5 md:text-sm cursor-pointer hover:bg-gray-800 active:scale-95 transition-all duration-200"
             >
               List an Item
             </Link>
