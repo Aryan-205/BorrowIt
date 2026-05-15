@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
-import { apiBase } from "./env";
+import { apiBase } from "@/lib/api";
 
-/** Web client — no Expo secure store; session uses cookies when your API serves better-auth. */
+/** Web client — session uses cookies when your API serves better-auth. */
 export const authClient = createAuthClient({
   baseURL: `${apiBase()}/api/auth`,
 });

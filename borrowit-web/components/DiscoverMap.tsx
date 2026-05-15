@@ -36,8 +36,8 @@ export function DiscoverMapPanel({
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setCurrentLocation([position.coords.latitude, position.coords.longitude]);
+        navigator.geolocation.getCurrentPosition((position) => {
+          setCurrentLocation([position.coords.latitude, position.coords.longitude]);
       }, (error) => {
         console.error(error);
       }, {

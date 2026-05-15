@@ -35,15 +35,15 @@ export function findRentalById(id: string): RentalRow | undefined {
   return rentals.find((x) => x.id === id);
 }
 
-export function bookRental(
+export async function bookRental(
   itemId: string,
   totalDays: number,
   borrowerId: string
-): { ok: true; rental: RentalRow } | { ok: false; message: string } {
+): Promise<{ ok: true; rental: RentalRow } | { ok: false; message: string }> {
   if (!itemId || typeof totalDays !== "number" || totalDays < 1) {
     return { ok: false, message: "itemId and totalDays (>=1) required" };
   }
-  const it = findItemById(itemId);
+  const it = await findItemById(itemId);
   if (!it || !it.isAvailable) {
     return { ok: false, message: "Item not available" };
   }
@@ -63,7 +63,7 @@ export function bookRental(
     itemMediaUrls: [...it.mediaUrls],
   };
   rentals.push(row);
-  setItemAvailable(it.id, false);
+  await setItemAvailable(it.id, false);
   return { ok: true, rental: row };
 }
 

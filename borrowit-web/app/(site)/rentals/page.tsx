@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { PiChatCircle, PiQrCodeFill } from "react-icons/pi";
 import { authClient } from "@/lib/auth";
 import { Chip } from "@/components/ui/Chip";
 import { spacing, radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
+import { useRentals } from "@/hooks/useRentals";
+import { useMe } from "@/hooks/useUser";
 import type { RentalClient } from "@/lib/rentalTypes";
 
 import type { ComponentProps } from "react";
@@ -26,23 +26,11 @@ function statusVariant(s: string): ChipVariant {
 export default function RentalsPage() {
   const { data: session } = authClient.useSession();
 
-  const { data: me } = useQuery({
-    queryKey: ["me-profile"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/users/me"), { credentials: "include" });
-      return res.json() as Promise<{ user?: { id: string } }>;
-    },
-  });
+  const { data: me } = useMe();
 
   const userId = session?.user?.id ?? me?.user?.id;
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["my-rentals"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/rentals"), { credentials: "include" });
-      return res.json() as Promise<{ rentals: RentalClient[] }>;
-    },
-  });
+  const { data, isLoading, refetch, isFetching } = useRentals();
 
   const rentals = data?.rentals ?? [];
 

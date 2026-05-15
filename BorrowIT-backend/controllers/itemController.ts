@@ -9,45 +9,71 @@ import {
   deleteItem as deleteItemModel,
 } from "../models/itemModel.js";
 
-export function listItems(_req: Request, res: Response) {
-  res.json({ items: listClientItems() });
-}
-
-export function postItem(req: Request, res: Response) {
-  const result = createItem(req.body as CreateItemBody);
-  if (!result.ok) {
-    res.status(400).json({ message: result.message });
-    return;
+export async function listItems(_req: Request, res: Response) {
+  try {
+    const items = await listClientItems();
+    res.json({ items });
+  } catch (err) {
+    console.error("listItems:", err);
+    res.status(500).json({ message: "Failed to load items" });
   }
-  res.status(201).json({ item: itemToClient(result.item) });
 }
 
-export function getItemById(req: Request, res: Response) {
+export async function postItem(req: Request, res: Response) {
+  try {
+    const result = await createItem(req.body as CreateItemBody);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.status(201).json({ item: itemToClient(result.item) });
+  } catch (err) {
+    console.error("postItem:", err);
+    res.status(500).json({ message: "Failed to create item" });
+  }
+}
+
+export async function getItemById(req: Request, res: Response) {
   const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
-  const it = findItemById(id);
-  if (!it) {
-    res.status(404).json({ message: "Item not found" });
-    return;
+  try {
+    const it = await findItemById(id);
+    if (!it) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+    res.json({ item: itemToClient(it) });
+  } catch (err) {
+    console.error("getItemById:", err);
+    res.status(500).json({ message: "Failed to load item" });
   }
-  res.json({ item: itemToClient(it) });
 }
 
-export function updateItem(req: Request, res: Response) {
+export async function updateItem(req: Request, res: Response) {
   const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
-  const result = updateItem(id, req.body as CreateItemBody);
-  if (!result.ok) {
-    res.status(400).json({ message: result.message });
-    return;
+  try {
+    const result = await updateItemModel(id, req.body as CreateItemBody);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.json({ item: itemToClient(result.item) });
+  } catch (err) {
+    console.error("updateItem:", err);
+    res.status(500).json({ message: "Failed to update item" });
   }
-  res.json({ item: itemToClient(result.item) });
 }
 
-export function deleteItem(req: Request, res: Response) {
+export async function deleteItem(req: Request, res: Response) {
   const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
-  const result = deleteItem(id);
-  if (!result.ok) {
-    res.status(400).json({ message: result.message });
-    return;
+  try {
+    const result = await deleteItemModel(id);
+    if (!result.ok) {
+      res.status(404).json({ message: result.message });
+      return;
+    }
+    res.json({ message: result.message });
+  } catch (err) {
+    console.error("deleteItem:", err);
+    res.status(500).json({ message: "Failed to delete item" });
   }
-  res.json({ message: "Item deleted successfully" });
 }

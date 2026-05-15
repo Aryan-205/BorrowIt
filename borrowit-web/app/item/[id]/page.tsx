@@ -2,240 +2,297 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  PiArrowLeftBold,
-  PiCalendarBlank,
-  PiMapPin,
-  PiShieldCheckFill,
-} from "react-icons/pi";
-import { authClient } from "@/lib/auth";
-import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
-import { KarmaStars } from "@/components/ui/KarmaStars";
-import { spacing, radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
+import { useMemo, useState } from "react";
+import { PiShieldCheckFill, PiStarFill } from "react-icons/pi";
+import { useBookRental } from "@/hooks/useRentals";
+import { useItem } from "@/hooks/useItems";
+import { ItemDetail } from "@/types/type";
+import { BookingSidebar } from "@/components/items/BookingSiderbar";
+import { ProductHeader } from "@/components/items/ProductHeader";
+
+function formatDateInput(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+function defaultSpecs(category: string) {
+  const cat = category.toLowerCase();
+  if (cat.includes("photo") || cat.includes("camera") || cat.includes("electronic")) {
+    return {
+      specs: [
+        "Sensor: 33MP Full-Frame",
+        "Video: 4K 60p 10-bit",
+        "ISO Range: 100 - 51200",
+      ],
+      capabilities: [
+        "Focus: 759 AF Points",
+        "Stabilization: 5-Axis IBIS",
+        "Weight: 658g Body Only",
+      ],
+    };
+  }
+  return {
+    specs: ["Condition: Excellent", "Includes: All accessories", "Pickup: Local meetup"],
+    capabilities: ["Verified listing", "Insured rental", "Flexible return window"],
+  };
+}
 
 export default function ItemDetailPage() {
   const params = useParams();
-  const id = typeof params.id === "string" ? params.id : "";
   const router = useRouter();
-  const qc = useQueryClient();
-  const { data: session } = authClient.useSession();
+  const id = typeof params.id === "string" ? params.id : "";
+  const { data, isLoading } = useItem(id);
+  const book = useBookRental();
+  const item = data?.item as ItemDetail | undefined;
 
-  const { data: me } = useQuery({
-    queryKey: ["me-item"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/users/me"), { credentials: "include" });
-      return res.json() as Promise<{ user?: { id: string } }>;
-    },
-  });
+  const today = useMemo(() => new Date(), []);
+  const defaultEnd = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d;
+  }, []);
 
-  const [days, setDays] = useState(1);
   const [imgIdx, setImgIdx] = useState(0);
+  const [startDate, setStartDate] = useState(() => formatDateInput(today));
+  const [endDate, setEndDate] = useState(() => formatDateInput(defaultEnd));
+  const [protectionPlan, setProtectionPlan] = useState("Full Coverage");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["item", id],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`/api/items/${id}`));
-      return res.json() as Promise<{ item?: Record<string, unknown> }>;
-    },
-    enabled: !!id,
-  });
-
-  const book = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(apiUrl("/api/rentals/book"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ itemId: id, totalDays: days }),
-      });
-      if (!res.ok) {
-        const err = (await res.json()) as { message?: string };
-        throw new Error(err.message ?? "Booking failed");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["items-near"] });
-      qc.invalidateQueries({ queryKey: ["my-rentals"] });
-      window.alert("Booked! Your rental request is pending. The lender will generate a QR code when ready.");
-      router.push("/rentals");
-    },
-    onError: (e: Error) => window.alert(e.message),
-  });
-
-  const item = data?.item as
-    | {
-        id: string;
-        title: string;
-        description?: string;
-        category: string;
-        dailyRate: number;
-        securityDeposit: number;
-        mediaUrls: string[];
-        isAvailable: boolean;
-        ownerId: string;
-        ownerName?: string;
-        ownerKarma?: number;
-        ownerKarmaCount?: number;
-        ownerIsVerified?: boolean;
-        lat?: number;
-        lng?: number;
-      }
-    | undefined;
+  const days = useMemo(() => {
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 1;
+    const diff = Math.ceil((e.getTime() - s.getTime()) / 86400000);
+    return Math.max(1, diff);
+  }, [startDate, endDate]);
 
   if (isLoading || !item) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-white pt-[env(safe-area-inset-top)]">
-        <p className="text-[#7E7576]">Loading…</p>
+      <div className="flex min-h-dvh flex-col bg-white">
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-[#7E7576]">Loading…</p>
+        </div>
       </div>
     );
   }
 
-  const total = item.dailyRate * days;
-  const userId = session?.user?.id ?? me?.user?.id;
-  const isOwner = userId ? item.ownerId === userId : false;
+  const images =
+    item.mediaUrls?.length > 0
+      ? item.mediaUrls
+      : [
+          "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200",
+          "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
+          "https://images.unsplash.com/photo-1452587925148-ce544e77a70a?w=400",
+          "https://images.unsplash.com/photo-1493863647863-eb863fac2c0b?w=400",
+        ];
 
+  const thumbs = images.slice(0, 4);
+  const extraPhotos = Math.max(0, images.length - 4);
+  const { specs, capabilities } = defaultSpecs(item.category);
+  const rating = (item.ownerKarma ?? 4.9).toFixed(1);
+  const reviewCount = item.ownerKarmaCount ?? 42;
+  const rentalSubtotal = item.dailyRate * days;
+  const serviceFee = Math.round(rentalSubtotal * 0.12 * 100) / 100;
+  const insurancePerDay = protectionPlan === "Full Coverage" ? 5 : 0;
+  const insuranceTotal = insurancePerDay * days;
+  const total = rentalSubtotal + serviceFee + insuranceTotal;
+  const categoryLabel = item.category === "Other" ? "Gear" : item.category;
+
+  const handleBook = () => {
+    book.mutate(
+      { itemId: id, totalDays: days },
+      { onSuccess: () => router.push("/rentals") },
+    );
+  };
   return (
-    <div className="min-h-[100dvh] bg-white pb-12 pt-[env(safe-area-inset-top)]">
-      <div className="relative h-[300px] w-full bg-[#F6F6F6]">
-        {item.mediaUrls?.length ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.mediaUrls[imgIdx]} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-6xl">📦</div>
-        )}
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white"
-          aria-label="Back"
-        >
-          <PiArrowLeftBold size={22} />
-        </button>
-        {item.mediaUrls?.length > 1 && (
-          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-            {item.mediaUrls.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setImgIdx(i)}
-                className={`h-1.5 rounded-full transition-all ${i === imgIdx ? "w-4 bg-white" : "w-1.5 bg-white/50"}`}
-                aria-label={`Image ${i + 1}`}
+    <div className="min-h-dvh bg-white">
+
+      <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8 lg:py-10">
+        <nav className="mb-6 text-sm text-[#6B7280]" aria-label="Breadcrumb">
+          <Link href="/discover" className="hover:text-black">
+            Explore
+          </Link>
+          <span className="mx-2">›</span>
+          <span>{categoryLabel}</span>
+          <span className="mx-2">›</span>
+          <span className="text-black">{item.title}</span>
+        </nav>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_400px]">
+          {/* Left column */}
+          <div className="min-w-0 space-y-8">
+            {/* Gallery */}
+            <section>
+              <div className="overflow-hidden rounded-2xl bg-[#F3F4F6]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={images[imgIdx]}
+                  alt={item.title}
+                  className="aspect-[16/10] w-full object-cover sm:aspect-[5/3]"
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
+                {thumbs.map((src, i) => {
+                  const isMore = i === 3 && extraPhotos > 0;
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      type="button"
+                      onClick={() => setImgIdx(i)}
+                      className={`relative overflow-hidden rounded-xl ring-2 transition-all ${
+                        imgIdx === i ? "ring-black" : "ring-transparent hover:ring-[#D1D5DB]"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="" className="aspect-square w-full object-cover" />
+                      {isMore ? (
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-lg font-bold text-white">
+                          +{extraPhotos}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Title block — shown on mobile before booking via order */}
+            <section className="space-y-4 lg:hidden">
+              <ProductHeader item={item} rating={rating} reviewCount={reviewCount} />
+            </section>
+
+            {/* Mobile booking — after title */}
+            <section className="lg:hidden">
+              <BookingSidebar
+                item={item}
+                days={days}
+                startDate={startDate}
+                endDate={endDate}
+                onStartChange={setStartDate}
+                onEndChange={setEndDate}
+                protectionPlan={protectionPlan}
+                onProtectionChange={setProtectionPlan}
+                rentalSubtotal={rentalSubtotal}
+                serviceFee={serviceFee}
+                insuranceTotal={insuranceTotal}
+                total={total}
+                onReserve={handleBook}
+                loading={book.isPending}
               />
-            ))}
+            </section>
+
+            <section className="hidden space-y-4 lg:block">
+              <ProductHeader item={item} rating={rating} reviewCount={reviewCount} />
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-black">About this item</h2>
+              <p className="mt-3 text-[15px] leading-relaxed text-[#4B5563]">
+                {item.description ||
+                  "Professional-grade equipment, meticulously maintained and ready for your next project. Perfect for enthusiasts and professionals alike who need reliable gear without the commitment of ownership."}
+              </p>
+            </section>
+
+            <section className="rounded-2xl bg-[#F9FAFB] p-5 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">
+                    Technical Specs
+                  </h3>
+                  <ul className="mt-3 space-y-2 text-sm text-black">
+                    {specs.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">
+                    Capabilities
+                  </h3>
+                  <ul className="mt-3 space-y-2 text-sm text-black">
+                    {capabilities.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-black">Lender</h2>
+              <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-[#EEEEEE] p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#E5E7EB] to-[#9CA3AF] text-lg font-bold text-white">
+                    {item.ownerName?.[0]?.toUpperCase() ?? "?"}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-black">{item.ownerName ?? "Lender"}</p>
+                    <p className="mt-0.5 text-sm text-[#6B7280]">
+                      {item.ownerIsVerified ? "Verified Power Lender" : "Lender"} • Joined 2023
+                    </p>
+                    <p className="mt-1 flex items-center gap-1 text-sm font-medium text-black">
+                      <PiStarFill className="text-[#F59E0B]" size={14} />
+                      {rating}
+                      <span className="font-normal text-[#6B7280]">
+                        ({item.ownerKarmaCount ?? 156} successful lends)
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/chat/${item.ownerId}`}
+                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg border border-[#D1D5DB] px-6 text-sm font-semibold text-black hover:bg-[#F9FAFB]"
+                >
+                  Message
+                </Link>
+              </div>
+            </section>
           </div>
-        )}
-      </div>
 
-      <div className="space-y-4 px-5 py-6" style={{ padding: spacing.margin, gap: spacing.md }}>
-        <div className="flex flex-wrap gap-2">
-          <Chip label={item.category} />
-          <Chip
-            label={item.isAvailable ? "Available" : "Unavailable"}
-            variant={item.isAvailable ? "available" : "pending"}
-          />
-        </div>
-        <h1 className="text-[28px] font-bold tracking-tight text-black">{item.title}</h1>
-        <p>
-          <span className="text-[32px] font-extrabold text-black">₹{item.dailyRate}</span>
-          <span className="text-lg text-[#7E7576]">/day</span>
-        </p>
-        {item.description ? <p className="text-[15px] leading-relaxed text-[#4C4546]">{item.description}</p> : null}
-
-        <div
-          className="flex items-center gap-3 rounded-2xl bg-[#F6F6F6] p-4"
-          style={{ borderRadius: radius.md }}
-        >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-black text-lg font-bold text-white">
-            {item.ownerName?.[0]?.toUpperCase() ?? "?"}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-black">{item.ownerName ?? "Owner"}</p>
-            <KarmaStars score={item.ownerKarma ?? 5} count={item.ownerKarmaCount ?? 0} />
-          </div>
-          {item.ownerIsVerified && <PiShieldCheckFill size={20} className="shrink-0 text-[#2563EB]" />}
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs text-[#7E7576]">
-          <PiMapPin size={16} />
-          {item.lat != null && item.lng != null ? (
-            <span>
-              {item.lat.toFixed(4)}, {item.lng.toFixed(4)}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2 rounded-lg bg-[#EFF6FF] p-4" style={{ borderRadius: radius.sm }}>
-          <PiShieldCheckFill size={20} className="shrink-0 text-[#2563EB]" />
-          <p className="flex-1 text-[13px] font-semibold text-[#2563EB]">
-            ₹{item.securityDeposit} refundable security deposit
-          </p>
-        </div>
-      </div>
-
-      {!isOwner && item.isAvailable && (
-        <div
-          className="mx-5 space-y-3 rounded-2xl border border-[#EEEEEE] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)]"
-          style={{ margin: spacing.margin, borderRadius: radius.md }}
-        >
-          <h2 className="text-xl font-semibold text-black">Book This Item</h2>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#EEEEEE] bg-[#F6F6F6] text-xl font-semibold"
-              onClick={() => setDays((d) => Math.max(1, d - 1))}
-            >
-              −
-            </button>
-            <div className="flex flex-1 items-center justify-center gap-1.5">
-              <PiCalendarBlank size={16} className="text-[#4C4546]" />
-              <span className="font-semibold text-black">
-                {days} day{days !== 1 ? "s" : ""}
-              </span>
+          {/* Right column — desktop sticky booking */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-4">
+              <BookingSidebar
+                item={item}
+                days={days}
+                startDate={startDate}
+                endDate={endDate}
+                onStartChange={setStartDate}
+                onEndChange={setEndDate}
+                protectionPlan={protectionPlan}
+                onProtectionChange={setProtectionPlan}
+                rentalSubtotal={rentalSubtotal}
+                serviceFee={serviceFee}
+                insuranceTotal={insuranceTotal}
+                total={total}
+                onReserve={handleBook}
+                loading={book.isPending}
+              />
+              <GuaranteeCard />
             </div>
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#EEEEEE] bg-[#F6F6F6] text-xl font-semibold"
-              onClick={() => setDays((d) => d + 1)}
-            >
-              +
-            </button>
-          </div>
-          <div className="flex justify-between text-[15px] text-[#4C4546]">
-            <span>Rental total</span>
-            <span className="font-semibold text-black">₹{total.toFixed(0)}</span>
-          </div>
-          <div className="flex justify-between text-[15px] text-[#4C4546]">
-            <span>Deposit (refundable)</span>
-            <span className="font-semibold text-black">₹{item.securityDeposit.toFixed(0)}</span>
-          </div>
-          <div className="flex justify-between border-t border-[#EEEEEE] pt-3">
-            <span className="text-xl font-semibold text-black">Total due</span>
-            <span className="text-xl font-semibold text-black">₹{(total + item.securityDeposit).toFixed(0)}</span>
-          </div>
-          <Button
-            label={`Book for ₹${(total + item.securityDeposit).toFixed(0)} →`}
-            onClick={() => book.mutate()}
-            loading={book.isPending}
-            className="w-full"
-          />
+          </aside>
         </div>
-      )}
 
-      {isOwner && (
-        <div className="mx-5 rounded-2xl bg-[#F6F6F6] p-4 text-center" style={{ margin: spacing.margin }}>
-          <p className="text-[13px] font-semibold text-[#7E7576]">This is your listing</p>
+        <div className="mt-6 lg:hidden">
+          <GuaranteeCard />
         </div>
-      )}
+      </main>
 
-      <div className="px-5 pb-8 text-center">
-        <Link href="/discover" className="text-sm text-[#2563EB] underline">
-          Back to Discover
-        </Link>
+    </div>
+  );
+}
+
+function GuaranteeCard() {
+  return (
+    <div className="flex gap-3 rounded-2xl border border-[#EEEEEE] bg-white p-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
+        <PiShieldCheckFill size={22} />
+      </div>
+      <div>
+        <p className="font-semibold text-black">Peace of Mind Guarantee</p>
+        <p className="mt-1 text-sm leading-relaxed text-[#6B7280]">
+          Every rental includes up to $10k protection against theft or accidental damage during the
+          rental period.
+          (Fake)
+        </p>
       </div>
     </div>
   );

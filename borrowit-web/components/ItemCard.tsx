@@ -5,6 +5,7 @@ import { PiHeart, PiStarFill } from "react-icons/pi";
 import { Chip } from "@/components/ui/Chip";
 import { KarmaStars } from "@/components/ui/KarmaStars";
 import { radius } from "@/lib/theme";
+import getCurrentLocation from "@/utils/currentLocation";
 
 export type ItemCardItem = {
   id: string;

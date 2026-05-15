@@ -1,37 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { PiCaretDownBold } from "react-icons/pi";
 import { ItemCard } from "@/components/ItemCard";
 import { DiscoverMapPanel } from "@/components/DiscoverMap";
 import { DiscoverFilterBar } from "@/components/discover/DiscoveryFilterBar";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
-import { apiUrl } from "@/lib/env";
+import { useItems } from "@/hooks/useItems";
 
 export default function DiscoverPage() {
   const [hubExpanded, setHubExpanded] = useState(true);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["items-near"],
-    queryFn: async () => {
-      const res = await fetch(apiUrl("/api/items"));
-      return res.json() as Promise<{ items: unknown[] }>;
-    },
-  });
-
-  const items = (data?.items ?? []) as {
-    id: string;
-    title: string;
-    dailyRate: number;
-    securityDeposit: number;
-    mediaUrls: string[];
-    isAvailable: boolean;
-    ownerName?: string | null;
-    ownerKarma?: number | null;
-    lat: number;
-    lng: number;
-  }[];
+  const { data, isLoading } = useItems();
+  const items = data?.items ?? [];
 
   const avgPrice = useMemo(() => {
     if (!items.length) return 0;
@@ -108,7 +89,7 @@ export default function DiscoverPage() {
       </section>
 
       <section
-        className={`relative flex h-full min-h-0 w-full flex-1 flex-col lg:w-1/2 lg:pr-8 lg:py-8 bg-white ${
+        className={`relative flex h-full min-h-0 w-full flex-1 flex-col lg:w-1/2 lg:pr-8 lg:py-8 bg-gray-200 ${
           hubExpanded ? "min-h-[45dvh] lg:min-h-0" : ""
         }`}
       >

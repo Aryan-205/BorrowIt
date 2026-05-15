@@ -4,34 +4,23 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PiArrowLeftBold, PiCheckCircleFill, PiQrCodeDuotone } from "react-icons/pi";
 import { spacing, radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
+import { useRental } from "@/hooks/useRentals";
 
-/**
- * Borrower flow: wait until the rental becomes ACTIVE (same backend behavior as the mobile app polling).
- * The preview app duplicated the lender screen; the web version uses borrower-specific copy.
- */
 export default function BorrowerHandoverPage() {
   const params = useParams();
   const rentalId = typeof params.rentalId === "string" ? params.rentalId : "";
   const router = useRouter();
   const [verified, setVerified] = useState(false);
 
+  const { data: rentalRes } = useRental(rentalId, {
+    refetchInterval: verified ? false : 3000,
+  });
+
   useEffect(() => {
-    if (!rentalId) return;
-    const poll = setInterval(async () => {
-      try {
-        const res = await fetch(apiUrl(`/api/rentals/${rentalId}`), { credentials: "include" });
-        const data = (await res.json()) as { rental?: { status?: string } };
-        if (data.rental?.status === "ACTIVE") {
-          setVerified(true);
-          clearInterval(poll);
-        }
-      } catch {
-        /* ignore */
-      }
-    }, 3000);
-    return () => clearInterval(poll);
-  }, [rentalId]);
+    if (rentalRes?.rental?.status === "ACTIVE") {
+      setVerified(true);
+    }
+  }, [rentalRes?.rental?.status]);
 
   if (verified) {
     return (
@@ -72,7 +61,7 @@ export default function BorrowerHandoverPage() {
         <h2 className="text-[28px] font-bold text-black">Scan the lender&apos;s QR</h2>
         <p className="max-w-md text-[15px] leading-relaxed text-[#7E7576]">
           Ask the lender to open <strong className="text-black">Show QR</strong> on their phone. When they generate a code,
-          this page will detect that your rental has started (or you can stay here while they complete handover).
+          this page will detect that your rental has started.
         </p>
         <div className="flex items-center gap-2 rounded-full bg-[#EFF6FF] px-4 py-2.5">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#2563EB] border-t-transparent" />

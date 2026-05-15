@@ -23,14 +23,19 @@ export function getRentalById(req: Request, res: Response) {
   res.json({ rental: rentalToClient(r) });
 }
 
-export function postBookRental(req: Request, res: Response) {
+export async function postBookRental(req: Request, res: Response) {
   const { itemId, totalDays } = req.body as { itemId?: string; totalDays?: number };
-  const result = bookRental(itemId ?? "", totalDays ?? 0, API_USER_ID);
-  if (!result.ok) {
-    res.status(400).json({ message: result.message });
-    return;
+  try {
+    const result = await bookRental(itemId ?? "", totalDays ?? 0, API_USER_ID);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.json({ rental: rentalToClient(result.rental) });
+  } catch (err) {
+    console.error("postBookRental:", err);
+    res.status(500).json({ message: "Failed to book rental" });
   }
-  res.json({ rental: result.rental });
 }
 
 export function postGenerateQr(req: Request, res: Response) {

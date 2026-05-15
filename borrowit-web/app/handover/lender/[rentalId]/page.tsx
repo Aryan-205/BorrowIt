@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   PiArrowLeftBold,
   PiChatCircle,
@@ -11,8 +10,7 @@ import {
   PiQrCodeFill,
 } from "react-icons/pi";
 import { radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
-import type { RentalClient } from "@/lib/rentalTypes";
+import { useGenerateRentalQr, useRental } from "@/hooks/useRentals";
 
 function shortRentalRef(id: string) {
   const tail = id.replace(/-/g, "").slice(-5).toUpperCase();
@@ -28,69 +26,49 @@ export default function LenderHandoverPage() {
   const [verified, setVerified] = useState(false);
   const [countdown, setCountdown] = useState(30);
 
-  const { data: rentalRes } = useQuery({
-    queryKey: ["rental", rentalId],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`/api/rentals/${rentalId}`), { credentials: "include" });
-      if (!res.ok) return null;
-      return res.json() as Promise<{ rental: RentalClient }>;
-    },
-    enabled: Boolean(rentalId),
+  const { data: rentalRes } = useRental(rentalId, {
+    refetchInterval: verified ? false : 3000,
   });
-
   const rental = rentalRes?.rental;
 
-  const generateQR = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(apiUrl(`/api/rentals/${rentalId}/generate-qr`), {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to generate QR");
-      return res.json() as Promise<{ token: string; qrData?: string }>;
-    },
-    onSuccess: (data) => {
-      setToken(data.token);
-      setQrData(data.qrData ?? null);
-      setCountdown(30);
-    },
-    onError: (e: Error) => window.alert(e.message),
-  });
+  const generateQR = useGenerateRentalQr();
+
+  useEffect(() => {
+    if (rental?.status === "ACTIVE") {
+      setVerified(true);
+    }
+  }, [rental?.status]);
+
+  useEffect(() => {
+    if (!rentalId) return;
+    generateQR.mutate(rentalId, {
+      onSuccess: (data) => {
+        setToken(data.token);
+        setQrData(data.qrData ?? null);
+        setCountdown(30);
+      },
+      onError: (e: Error) => window.alert(e.message),
+    });
+  }, [rentalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!token) return;
     const interval = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
-          generateQR.mutate();
+          generateQR.mutate(rentalId, {
+            onSuccess: (data) => {
+              setToken(data.token);
+              setQrData(data.qrData ?? null);
+            },
+          });
           return 30;
         }
         return c - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!rentalId) return;
-    const poll = setInterval(async () => {
-      try {
-        const res = await fetch(apiUrl(`/api/rentals/${rentalId}`), { credentials: "include" });
-        const data = (await res.json()) as { rental?: { status?: string } };
-        if (data.rental?.status === "ACTIVE") {
-          setVerified(true);
-          clearInterval(poll);
-        }
-      } catch {
-        /* ignore */
-      }
-    }, 3000);
-    return () => clearInterval(poll);
-  }, [rentalId]);
-
-  useEffect(() => {
-    if (rentalId) generateQR.mutate();
-  }, [rentalId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, rentalId, generateQR]);
 
   const qrSrc =
     qrData != null
@@ -117,7 +95,7 @@ export default function LenderHandoverPage() {
     );
   }
 
-  const itemTitle = rental?.itemTitle ?? "Sony A7IV Mirrorless";
+  const itemTitle = rental?.itemTitle ?? "Item";
   const thumb = rental?.itemMediaUrls?.[0];
   const days = rental?.totalDays ?? 5;
 
@@ -200,8 +178,8 @@ export default function LenderHandoverPage() {
           <div className="flex items-center gap-3 rounded-2xl bg-[#F3F4F6] p-3 md:p-4">
             <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-[#E5E7EB] to-[#D1D5DB]" />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-black">Sarah Jenkins</p>
-              <p className="text-xs text-[#6B7280]">Verified Borrower · 4.9 ★</p>
+              <p className="font-semibold text-black">Borrower</p>
+              <p className="text-xs text-[#6B7280]">Waiting for scan…</p>
             </div>
             <button type="button" className="shrink-0 rounded-lg border border-[#D1D5DB] bg-white p-2.5 text-black" aria-label="Message">
               <PiChatCircle size={20} />
