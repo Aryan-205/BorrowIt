@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth";
-import { DEV_BYPASS_KEY } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { spacing, radius } from "@/lib/theme";
@@ -17,11 +16,6 @@ export default function LoginPage() {
   const [devMode, setDevMode] = useState(false);
 
   const handleLogin = async () => {
-    if (devMode) {
-      localStorage.setItem(DEV_BYPASS_KEY, "true");
-      router.replace("/discover");
-      return;
-    }
     if (!email || !password) {
       window.alert("Fill in all fields");
       return;
@@ -71,18 +65,6 @@ export default function LoginPage() {
         />
         <Button label={devMode ? "Skip to App (Dev)" : "Sign In"} onClick={handleLogin} loading={loading} className="w-full" />
       </div>
-
-      <div
-        className="flex items-center justify-between rounded-lg border border-[#FDE68A] bg-[#FFFBEB] px-4 py-2"
-        style={{ borderRadius: radius.sm }}
-      >
-        <span className="text-[13px] font-semibold text-[#92400E]">Dev mode</span>
-        <label className="relative inline-flex cursor-pointer items-center">
-          <input type="checkbox" className="peer sr-only" checked={devMode} onChange={(e) => setDevMode(e.target.checked)} />
-          <div className="h-6 w-11 rounded-full bg-[#EEEEEE] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#F59E0B] peer-checked:after:translate-x-5" />
-        </label>
-      </div>
-      {devMode && <p className="-mt-6 text-center text-xs text-[#B45309]">Auth skipped — tap button to enter the app</p>}
 
       <p className="flex flex-wrap justify-center gap-1 text-[15px] text-[#4C4546]">
         No account yet?

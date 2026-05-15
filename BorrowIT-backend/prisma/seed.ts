@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { hashPassword } from "../lib/password.js";
 import { PrismaClient } from "./generated/prisma/client.js";
 import { RentalStatus } from "./generated/prisma/enums.js";
 
@@ -192,7 +193,13 @@ async function main() {
   await prisma.item.deleteMany();
   await prisma.user.deleteMany();
 
-  await prisma.user.createMany({ data: [...USERS] });
+  const usersWithHashed = await Promise.all(
+    USERS.map(async (u) => ({
+      ...u,
+      password: await hashPassword(u.password),
+    })),
+  );
+  await prisma.user.createMany({ data: usersWithHashed });
 
   const items = buildItems();
   await prisma.item.createMany({ data: items });
