@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PiImageSquare, PiXBold } from "react-icons/pi";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { spacing, radius } from "@/lib/theme";
-import { apiUrl } from "@/lib/env";
+import { useCreateItem } from "@/hooks/useItems";
 
 const CATEGORIES = [
   "Electronics",
@@ -21,44 +20,13 @@ const CATEGORIES = [
 ];
 
 export default function LendPage() {
-  const qc = useQueryClient();
+  const createItemMutation = useCreateItem();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Other");
   const [dailyRate, setDailyRate] = useState("");
   const [deposit, setDeposit] = useState("");
   const [images, setImages] = useState<string[]>([]);
-
-  const createItem = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(apiUrl("/api/items"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          title,
-          description,
-          category,
-          dailyRate: parseFloat(dailyRate),
-          securityDeposit: parseFloat(deposit),
-          lat: 19.076 + (Math.random() - 0.5) * 0.1,
-          lng: 72.8777 + (Math.random() - 0.5) * 0.1,
-          mediaUrls: images,
-        }),
-      });
-      return res.json();
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["items-near"] });
-      window.alert("Listed! Your item is now live on the marketplace.");
-      setTitle("");
-      setDescription("");
-      setDailyRate("");
-      setDeposit("");
-      setImages([]);
-    },
-    onError: (e: Error) => window.alert(e.message ?? "Failed to list item"),
-  });
 
   const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -71,7 +39,7 @@ export default function LendPage() {
     e.target.value = "";
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title || !dailyRate || !deposit) {
       window.alert("Fill in title, daily rate, and deposit");
       return;
@@ -80,7 +48,25 @@ export default function LendPage() {
       window.alert("Rates must be numbers");
       return;
     }
-    createItem.mutate();
+    try {
+      await createItemMutation.mutateAsync({
+        title,
+        description,
+        category,
+        dailyRate: parseFloat(dailyRate),
+        securityDeposit: parseFloat(deposit),
+        mediaUrls: images,
+      });
+      setTitle("");
+      setDescription("");
+      setCategory("Other");
+      setDailyRate("");
+      setDeposit("");
+      setImages([]);
+      window.alert("Item listed successfully");
+    } catch (e: unknown) {
+      window.alert(e instanceof Error ? e.message : "Failed to list item");
+    }
   };
 
   return (
@@ -175,7 +161,7 @@ export default function LendPage() {
           </div>
         </div>
 
-        <Button label="List Item →" onClick={handleSubmit} loading={createItem.isPending} className="w-full" />
+        <Button label="List Item →" onClick={handleSubmit} loading={createItemMutation.isPending} className="w-full" />
       </div>
     </div>
   );

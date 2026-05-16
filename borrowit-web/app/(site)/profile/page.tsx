@@ -1,35 +1,29 @@
 "use client";
 
-import Link from "next/link";
+import Image from "next/image";
 import {
   PiChatCircle,
   PiCheckCircleFill,
   PiPhone,
   PiStarFill,
-  PiVideoCameraFill,
 } from "react-icons/pi";
 import { spacing, radius } from "@/lib/theme";
 import { useState } from "react";
 import { Sonnar } from "@/components/ui/Sonnar";
+import { useMe } from "@/hooks/useUser";
+
+function formatDisplayName(username: string | null | undefined) {
+  if (!username) return "";
+  return username
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export default function ProfilePage() {
-  // Fake data for UI work. Wire to real API fields later.
-  const profile = {
-    name: "Jane Doe",
-    trustedSince: "Trusted Lender since 2023",
-    badges: ["Pro Lender", "Identity Verified"],
-    karmaScore: 4.95,
-    karmaCaption: "Top 1% of community",
-    stats: [
-      { value: "142", label: "Handovers" },
-      { value: "100%", label: "Return Rate" },
-      { value: "~15m", label: "Response" },
-      { value: "8", label: "Badges" },
-    ],
-    bio:
-      "Outdoor enthusiast and tech collector. I believe the future is circular. I love sharing my high-quality gear with people who will appreciate it as much as I do. Most active on weekends for handovers!",
-  } as const;
 
+  
   const evidence = [
     { title: "Sony A7R IV", date: "Oct 12", tone: "bg-[linear-gradient(135deg,#111827,#4b5563)]" },
     { title: "Osprey 65L Pack", date: "Sep 28", tone: "bg-[linear-gradient(135deg,#0f172a,#1f2937)]" },
@@ -38,32 +32,33 @@ export default function ProfilePage() {
     { title: "Osprey 65L Pack", date: "Sep 28", tone: "bg-[linear-gradient(135deg,#0f172a,#1f2937)]" },
     { title: "Epson 4K Projector", date: "Sep 15", tone: "bg-[linear-gradient(135deg,#0b0b0e,#1f2937)]" },
   ] as const;
-
+  
   const recentFeedback = [
     {
       name: "Marcus T.",
       time: "2 days ago",
       text:
-        '"Jane was incredibly responsive. The camera gear was in perfect condition and she even included an extra battery. Highly recommend!"',
+      '"Jane was incredibly responsive. The camera gear was in perfect condition and she even included an extra battery. Highly recommend!"',
     },
     {
       name: "Sarah K.",
       time: "1 week ago",
       text:
-        '"Smooth transaction. Met right on time and she explained some of the settings for the projector. Awesome lender!"',
+      '"Smooth transaction. Met right on time and she explained some of the settings for the projector. Awesome lender!"',
     },
   ] as const;
-
+  
   const trustMatrix = [
     "Biometric ID Verified",
     "Linked LinkedIn Profile",
     "Phone & Email Confirmed",
     "Home Address Verified",
   ] as const;
-
+  
   const [isSharing, setIsSharing] = useState(true);
   const [viewAllLogs, setViewAllLogs] = useState(false);
 
+  
   const handleShare = () => {
     setIsSharing(false);
     navigator.clipboard.writeText(window.location.href);
@@ -72,7 +67,16 @@ export default function ProfilePage() {
       setIsSharing(true);
     }, 2000);
   }
+  
+  const { data: me, isLoading: isLoadingMe } = useMe();
+  if (isLoadingMe) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (!me) return <div className="flex items-center justify-center h-screen">User not found</div>;
+  const user = me.user;
 
+  console.log(user)
+
+  const trustedSince = new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto bg-[#F6F6F6] px-5 pb-28 pt-[max(1rem,env(safe-area-inset-top))]"
@@ -86,30 +90,24 @@ export default function ProfilePage() {
         >
           <div className="flex flex-col items-center text-center lg:items-center lg:text-center">
             {/* Avatar */}
-            <div
-              className="relative flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br from-[#0b0b0e] to-[#4b5563] shadow-[0_18px_50px_rgba(0,0,0,0.25)]"
-              style={{ borderRadius: radius.full }}
-            >
-              <span className="text-4xl font-extrabold text-white">{profile.name.split(" ")[0]?.[0] ?? "J"}</span>
-              <span className="absolute bottom-2 right-2 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-            </div>
+            <Image src={user.avatar ?? "https://imgs.search.brave.com/7p-MC2-TJ5Vg4FozPjkuOrugYZpPKCr73_P26JbJN3w/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzExLzY4LzUwLzU3/LzM2MF9GXzExNjg1/MDU3OTRfSUJDRWlh/ZnNJckhGSjA5ZTY1/UDJ2aDUxMTVDMVhJ/N2UuanBn"} alt={user.username ?? ""} width={100} height={100} className="rounded-full border border-[#EEEEEE]" unoptimized />
 
             {/* Name */}
             <div className="mt-4">
-              <p className="text-[22px] font-bold tracking-tight text-black">{profile.name}</p>
-              <p className="mt-1 text-xs font-medium text-[#7E7576]">{profile.trustedSince}</p>
+              <p className="text-[22px] font-bold tracking-tight text-black">{formatDisplayName(user.username)}</p>
+              <p className="mt-1 text-xs font-medium text-[#7E7576]">{trustedSince}</p>
             </div>
 
             {/* Badges */}
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              {profile.badges.map((b) => (
+              {user.isVerified && (
                 <span
-                  key={b}
+                  key="verified"
                   className="rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1 text-[11px] font-semibold text-[#4B5563]"
                 >
-                  {b}
+                  Verified
                 </span>
-              ))}
+              )}
             </div>
 
             {/* Share Profile */}
@@ -137,18 +135,18 @@ export default function ProfilePage() {
               <div className="rounded-[18px] bg-linear-to-b from-[#0b0b0e] to-[#111827] px-6 py-5 shadow-[0_1px_1px_0px_rgba(0,0,0,0.18)] h-full flex flex-col justify-between">
                 <p className="text-sm font-medium tracking-wider text-white/60">KARMA SCORE</p>
                 <div className="mt-1 flex items-end justify-between">
-                  <span className="text-[50px] font-extrabold leading-none text-white">{profile.karmaScore.toFixed(2)}</span>
+                  <span className="text-[50px] font-extrabold leading-none text-white">{user.karma?.toFixed(2) ?? "0.00"}</span>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-[12px] font-semibold text-[#F59E0B]">
                   <PiStarFill size={14} className="text-[#F59E0B]" />
                   <p className="text-sm font-medium tracking-wider text-white/60">
-                    {profile.karmaCaption}
+                    {user.karmaCount}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {profile.stats.map((s) => (
+                {/* {user.stats.map((s) => (
                   <div
                     key={s.label}
                     className="flex flex-col items-center justify-center rounded-2xl border border-[#EEEEEE] bg-white px-4 py-4 shadow-[0_10px_26px_rgba(0,0,0,0.04)]"
@@ -156,13 +154,13 @@ export default function ProfilePage() {
                     <span className="text-[20px] font-bold text-black">{s.value}</span>
                     <span className="mt-0.5 text-[12px] font-medium text-[#7E7576]">{s.label}</span>
                   </div>
-                ))}
+                ))} */}
               </div>
             </div>
 
             <div className="mt-5">
               <p className="text-lg font-semibold text-black">Bio</p>
-              <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{profile.bio}</p>
+              <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{user.bio}</p>
             </div>
           </div>
         </div>

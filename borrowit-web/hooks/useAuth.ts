@@ -1,12 +1,20 @@
 import { useMutation } from "@tanstack/react-query";
-import { authClient } from "@/lib/auth";
+import { signIn, signUp, signOut } from "@/services/auth";
 
-export const useAuth = () => {
+export const useSignIn = () => {
   return useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) throw new Error(res.error.message);
-      return res.data;
-    },
+    mutationFn: ({ email, password }: { email: string; password: string }) => signIn(email, password),
+  });
+};
+
+export const useSignUp = () => {
+  return useMutation({
+    mutationFn: ({ name, email, password }: { name: string; email: string; password: string }) => signUp(name, email, password),
+  });
+};
+
+export const useSignOut = () => {
+  return useMutation({
+    mutationFn: signOut,
   });
 };

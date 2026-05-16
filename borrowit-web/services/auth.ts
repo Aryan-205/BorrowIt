@@ -13,3 +13,9 @@ export const signUp = async (name: string, email: string, password: string) => {
     body: JSON.stringify({ name, email, password }),
   });
 };
+
+export const signOut = async () => {
+  return apiFetch("/api/auth/signout", {
+    method: "POST",
+  });
+};

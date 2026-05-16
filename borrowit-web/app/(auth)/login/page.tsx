@@ -3,17 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { spacing, radius } from "@/lib/theme";
+import { useSignIn } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const signInMutation = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devMode, setDevMode] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -22,9 +22,8 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) window.alert(res.error.message ?? "Login failed");
-      else router.replace("/discover");
+      await signInMutation.mutateAsync({ email, password });
+      router.replace("/discover");
     } catch (e: unknown) {
       window.alert(e instanceof Error ? e.message : "Login failed");
     } finally {
@@ -53,7 +52,6 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           placeholder="you@example.com"
-          disabled={devMode}
         />
         <Input
           label="Password"
@@ -61,14 +59,13 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          disabled={devMode}
         />
-        <Button label={devMode ? "Skip to App (Dev)" : "Sign In"} onClick={handleLogin} loading={loading} className="w-full" />
+        <Button label="Sign In" onClick={handleLogin} loading={loading} className="w-full cursor-pointer hover:opacity-90 active:scale-95 transition-all duration-100" />
       </div>
 
       <p className="flex flex-wrap justify-center gap-1 text-[15px] text-[#4C4546]">
         No account yet?
-        <Link href="/register" className="font-semibold text-black">
+        <Link href="/register" className="font-semibold text-black cursor-pointer">
           Create one
         </Link>
       </p>

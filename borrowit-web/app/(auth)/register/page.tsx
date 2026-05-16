@@ -3,18 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { spacing, radius } from "@/lib/theme";
+import { useSignUp } from "@/hooks/useAuth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const signUpMutation = useSignUp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devMode, setDevMode] = useState(false);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -25,11 +25,10 @@ export default function RegisterPage() {
       window.alert("Password must be at least 8 characters");
       return;
     }
-    setLoading(true);
     try {
-      const res = await authClient.signUp.email({ name, email, password });
-      if (res.error) window.alert(res.error.message ?? "Registration failed");
-      else router.replace("/discover");
+      setLoading(true);
+      await signUpMutation.mutateAsync({ name, email, password });
+      router.replace("/discover");
     } catch (e: unknown) {
       window.alert(e instanceof Error ? e.message : "Registration failed");
     } finally {
@@ -51,14 +50,13 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Johnson" disabled={devMode} />
+        <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Johnson" />
         <Input
           label="Email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          disabled={devMode}
         />
         <Input
           label="Password"
@@ -66,19 +64,18 @@ export default function RegisterPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Min. 8 characters"
-          disabled={devMode}
         />
         <Button
-          label={devMode ? "Skip to App (Dev)" : "Create Account"}
+          label="Create Account"
           onClick={handleRegister}
           loading={loading}
-          className="w-full"
+          className="w-full cursor-pointer hover:opacity-90 active:scale-95 transition-all duration-100"
         />
       </div>
 
       <p className="flex flex-wrap justify-center gap-1 text-[15px] text-[#4C4546]">
         Already have an account?
-        <Link href="/login" className="font-semibold text-black">
+        <Link href="/login" className="font-semibold text-black cursor-pointer">
           Sign In
         </Link>
       </p>

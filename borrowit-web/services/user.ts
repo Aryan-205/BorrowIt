@@ -1,11 +1,5 @@
 import { apiFetch } from "@/lib/api";
-
-export type User = {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-};
+import type { User } from "@/types/type";
 
 export async function getUser(userId: string): Promise<{ user: User }> {
   return apiFetch(`/api/users/${userId}`);

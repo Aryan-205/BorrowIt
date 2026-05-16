@@ -7,7 +7,6 @@ import {
   getMe,
   getUser,
   updateUser,
-  type User,
 } from "@/services/user";
 
 export const meQueryKey = ["users", "me"] as const;
@@ -58,5 +57,3 @@ export function useDeleteUser() {
     },
   });
 }
-
-export type { User };
