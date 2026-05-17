@@ -40,7 +40,7 @@ export default function LoginPage() {
         >
           ↕
         </div>
-        <h1 className="text-[28px] font-bold tracking-tight text-black">Borrow-It</h1>
+        <h1 className="text-[28px] font-bold tracking-tight text-black">Snip</h1>
         <p className="text-center text-[15px] text-[#7E7576]">Rent anything. From anyone.</p>
       </div>
 

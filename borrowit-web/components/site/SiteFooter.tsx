@@ -20,7 +20,7 @@ export function SiteFooter({ compact }: { compact?: boolean }) {
               </Link>
             ))}
           </div>
-          <p className="text-center text-xs">© 2026 Borrow-It. Precision Lending.</p>
+          <p className="text-center text-xs">© 2026 Snip. Precision Lending.</p>
         </div>
       </footer>
     );
@@ -30,8 +30,8 @@ export function SiteFooter({ compact }: { compact?: boolean }) {
     <footer className="hidden shrink-0 border-t border-[#EEEEEE] bg-white px-4 py-6 md:block md:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-bold text-black">Borrow-It</p>
-          <p className="mt-1 text-xs text-[#7E7576]">© 2026 Borrow-It. Precision Lending.</p>
+          <p className="font-bold text-black">Snip</p>
+          <p className="mt-1 text-xs text-[#7E7576]">© 2026 Snip. Precision Lending.</p>
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#4C4546]">
           {links.map((l) => (

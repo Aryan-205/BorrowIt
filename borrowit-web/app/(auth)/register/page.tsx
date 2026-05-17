@@ -45,7 +45,7 @@ export default function RegisterPage() {
         >
           ↕
         </div>
-        <h1 className="text-[28px] font-bold tracking-tight text-black">Join Borrow-It</h1>
+        <h1 className="text-[28px] font-bold tracking-tight text-black">Join Snip</h1>
         <p className="text-center text-[15px] text-[#7E7576]">List your stuff. Make passive income.</p>
       </div>
 

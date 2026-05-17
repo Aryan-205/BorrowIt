@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Borrow-It",
+  title: "Snip",
   description: "Rent anything. From anyone.",
 };
 

@@ -47,7 +47,7 @@ export default function RegisterScreen() {
             <View style={styles.logoWrap}>
               <Text style={styles.logoIcon}>↕</Text>
             </View>
-            <Text style={styles.wordmark}>Join Borrow-It</Text>
+            <Text style={styles.wordmark}>Join Snip</Text>
             <Text style={styles.tagline}>List your stuff. Make passive income.</Text>
           </View>
 

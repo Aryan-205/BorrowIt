@@ -49,7 +49,7 @@ export default function LoginScreen() {
             <View style={styles.logoWrap}>
               <Text style={styles.logoIcon}>↕</Text>
             </View>
-            <Text style={styles.wordmark}>Borrow-It</Text>
+            <Text style={styles.wordmark}>Snip</Text>
             <Text style={styles.tagline}>Rent anything. From anyone.</Text>
           </View>
 
