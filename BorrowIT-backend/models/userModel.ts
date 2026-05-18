@@ -1,11 +1,2 @@
-import { countUserRentals } from "./rentalModel.js";
-
-export function getCurrentUserProfile(userId: string) {
-  return {
-    id: userId,
-    karmaScore: 5,
-    karmaCount: 3,
-    rentalCount: countUserRentals(userId),
-    isVerified: true,
-  };
-}
+// User model — profile data is served directly via userController/GET /api/users/me
+export {};

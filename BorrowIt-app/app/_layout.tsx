@@ -1,12 +1,32 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "../lib/auth";
+
+const queryClient = new QueryClient();
+
+function AuthGate() {
+  const router = useRouter();
+  const segments = useSegments();
+  const { user, isLoading } = useSession();
+
+  useEffect(() => {
+    if (isLoading) return;
+    const inAuth = segments[0] === "(auth)";
+    if (!user && !inAuth) {
+      router.replace("/(auth)/login");
+    } else if (user && inAuth) {
+      router.replace("/(tabs)");
+    }
+  }, [user, isLoading, segments]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
 export default function RootLayout() {
-  const [queryClient] = useState(() => new QueryClient());
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <AuthGate />
     </QueryClientProvider>
   );
 }

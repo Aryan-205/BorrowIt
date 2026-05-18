@@ -1,35 +1,29 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, KeyboardAvoidingView,
-  Platform, ScrollView, TouchableOpacity, Alert, Switch,
+  Platform, ScrollView, TouchableOpacity, Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { authClient } from "../../lib/auth";
-import { DEV_BYPASS_KEY } from "./_layout";
+import { signIn, useInvalidateSession } from "../../lib/auth";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { colors, font, spacing, radius } from "../../lib/theme";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const invalidate = useInvalidateSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devMode, setDevMode] = useState(false);
 
   const handleLogin = async () => {
-    if (devMode) {
-      await AsyncStorage.setItem(DEV_BYPASS_KEY, "true");
-      router.replace("/(tabs)");
-      return;
-    }
     if (!email || !password) return Alert.alert("Fill in all fields");
     setLoading(true);
     try {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) Alert.alert("Error", res.error.message ?? "Login failed");
+      await signIn(email, password);
+      await invalidate();
+      router.replace("/(tabs)");
     } catch (e: any) {
       Alert.alert("Error", e.message ?? "Login failed");
     } finally {
@@ -44,7 +38,6 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          {/* Wordmark */}
           <View style={styles.header}>
             <View style={styles.logoWrap}>
               <Text style={styles.logoIcon}>↕</Text>
@@ -61,7 +54,6 @@ export default function LoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               placeholder="you@example.com"
-              editable={!devMode}
             />
             <Input
               label="Password"
@@ -69,28 +61,13 @@ export default function LoginScreen() {
               onChangeText={setPassword}
               secureTextEntry
               placeholder="••••••••"
-              editable={!devMode}
             />
             <Button
-              label={devMode ? "Skip to App (Dev)" : "Sign In"}
+              label="Sign In"
               onPress={handleLogin}
               loading={loading}
             />
           </View>
-
-          {/* Dev mode toggle */}
-          <View style={styles.devRow}>
-            <Text style={styles.devLabel}>Dev mode</Text>
-            <Switch
-              value={devMode}
-              onValueChange={setDevMode}
-              trackColor={{ false: colors.border, true: "#F59E0B" }}
-              thumbColor={devMode ? "#fff" : "#fff"}
-            />
-          </View>
-          {devMode && (
-            <Text style={styles.devHint}>Auth skipped — tap button to enter the app</Text>
-          )}
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>No account yet?</Text>
@@ -116,15 +93,6 @@ const styles = StyleSheet.create({
   wordmark: { ...font.headlineLg, color: colors.textPrimary },
   tagline: { ...font.bodyMd, color: colors.textMuted },
   form: { gap: spacing.md },
-  devRow: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: "#FFFBEB",
-    borderWidth: 1, borderColor: "#FDE68A",
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
-  },
-  devLabel: { ...font.labelMd, color: "#92400E" },
-  devHint: { ...font.caption, color: "#B45309", textAlign: "center", marginTop: -spacing.md },
   footer: { flexDirection: "row", justifyContent: "center" },
   footerText: { ...font.bodyMd, color: colors.textSecondary },
   link: { ...font.bodyMd, fontWeight: "600", color: colors.primary },

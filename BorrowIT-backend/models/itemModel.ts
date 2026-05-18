@@ -17,6 +17,7 @@ function rowFromDb(it: ItemWithOwner): ItemRow {
     lng: it.lng ?? it.owner.longitude ?? 0,
     mediaUrls: it.images,
     isAvailable: it.isAvailable,
+    specs: Array.isArray(it.specs) ? (it.specs as Array<{ label: string; value: string }>) : [],
     ownerId: it.ownerId,
     ownerName: it.owner.username,
     ownerKarma: it.owner.karma / 10,
@@ -39,6 +40,7 @@ export function itemToClient(it: ItemRow) {
     lng: it.lng,
     mediaUrls: it.mediaUrls,
     isAvailable: it.isAvailable,
+    specs: it.specs ?? [],
     ownerId: it.ownerId,
     ownerName: it.ownerName,
     ownerKarma: it.ownerKarma,
@@ -49,6 +51,15 @@ export function itemToClient(it: ItemRow) {
 
 export async function listClientItems(): Promise<ReturnType<typeof itemToClient>[]> {
   const rows = await prisma.item.findMany({
+    include: ownerInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((it) => itemToClient(rowFromDb(it)));
+}
+
+export async function listMyItems(ownerId: string): Promise<ReturnType<typeof itemToClient>[]> {
+  const rows = await prisma.item.findMany({
+    where: { ownerId },
     include: ownerInclude,
     orderBy: { createdAt: "desc" },
   });
@@ -87,6 +98,7 @@ export async function createItem(
       lat: typeof body.lat === "number" ? body.lat : owner.latitude ?? 19.076,
       lng: typeof body.lng === "number" ? body.lng : owner.longitude ?? 72.8777,
       images: Array.isArray(body.mediaUrls) ? (body.mediaUrls as string[]) : [],
+      specs: Array.isArray(body.specs) ? body.specs : [],
       isAvailable: true,
       ownerId,
     },
@@ -122,6 +134,7 @@ export async function updateItem(
       ...(typeof body.lat === "number" ? { lat: body.lat } : {}),
       ...(typeof body.lng === "number" ? { lng: body.lng } : {}),
       ...(Array.isArray(body.mediaUrls) ? { images: body.mediaUrls as string[] } : {}),
+      ...(Array.isArray(body.specs) ? { specs: body.specs } : {}),
       ...(typeof body.isAvailable === "boolean" ? { isAvailable: body.isAvailable } : {}),
     },
     include: ownerInclude,

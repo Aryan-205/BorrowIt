@@ -1,3 +1,5 @@
+export type SpecEntry = { label: string; value: string };
+
 export type ItemRow = {
   id: string;
   title: string;
@@ -9,6 +11,7 @@ export type ItemRow = {
   lng: number;
   mediaUrls: string[];
   isAvailable: boolean;
+  specs?: SpecEntry[];
   ownerId: string;
   ownerName: string;
   ownerKarma: number;

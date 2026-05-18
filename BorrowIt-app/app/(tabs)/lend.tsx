@@ -6,52 +6,69 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
-import { Plus, X, ImageSquare } from "phosphor-react-native";
-import { api } from "../../lib/api";
-import { authClient } from "../../lib/auth";
+import { Plus, X, ImageSquare, Minus } from "phosphor-react-native";
+import { BASE_URL } from "../../lib/api";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
 
 const CATEGORIES = ["Electronics", "Tools", "Sports", "Outdoor", "Music", "Fashion", "Books", "Kitchen", "Other"];
+const MAX_SPECS = 6;
+
+type SpecEntry = { label: string; value: string };
 
 export default function LendScreen() {
   const qc = useQueryClient();
-  const { data: session } = authClient.useSession();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Other");
   const [dailyRate, setDailyRate] = useState("");
   const [deposit, setDeposit] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [specs, setSpecs] = useState<SpecEntry[]>([{ label: "", value: "" }]);
+
+  const addSpec = () => {
+    if (specs.length < MAX_SPECS) setSpecs((prev) => [...prev, { label: "", value: "" }]);
+  };
+
+  const removeSpec = (i: number) => {
+    setSpecs((prev) => prev.filter((_, j) => j !== i));
+  };
+
+  const updateSpec = (i: number, field: "label" | "value", text: string) => {
+    setSpecs((prev) => prev.map((s, j) => (j === i ? { ...s, [field]: text } : s)));
+  };
+
+  const cleanSpecs = () => specs.filter((s) => s.label.trim() && s.value.trim());
 
   const createItem = useMutation({
     mutationFn: async () => {
-      // Use demo coordinates (Mumbai)
-      const res = await fetch(
-        `${(api as any).url ?? "https://1l0oskvouaqvjjatva3n0-preview-4200.runable.site/"}api/items`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            title,
-            description,
-            category,
-            dailyRate: parseFloat(dailyRate),
-            securityDeposit: parseFloat(deposit),
-            lat: 19.076 + (Math.random() - 0.5) * 0.1,
-            lng: 72.8777 + (Math.random() - 0.5) * 0.1,
-            mediaUrls: images,
-          }),
-        }
-      );
-      return res.json();
+      const res = await fetch(`${BASE_URL}api/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title,
+          description,
+          category,
+          dailyRate: parseFloat(dailyRate),
+          securityDeposit: parseFloat(deposit),
+          lat: 19.076 + (Math.random() - 0.5) * 0.1,
+          lng: 72.8777 + (Math.random() - 0.5) * 0.1,
+          mediaUrls: images,
+          specs: cleanSpecs(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error((data as any).message ?? "Failed to list item");
+      return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["items-near"] });
+      qc.invalidateQueries({ queryKey: ["my-items"] });
       Alert.alert("Listed!", "Your item is now live on the marketplace.", [{ text: "OK" }]);
-      setTitle(""); setDescription(""); setDailyRate(""); setDeposit(""); setImages([]);
+      setTitle(""); setDescription(""); setDailyRate(""); setDeposit("");
+      setImages([]); setSpecs([{ label: "", value: "" }]);
     },
     onError: (e: any) => Alert.alert("Error", e.message ?? "Failed to list item"),
   });
@@ -156,6 +173,52 @@ export default function LendScreen() {
             </View>
           </View>
 
+          {/* Specs */}
+          <View style={styles.section}>
+            <View style={styles.specsHeader}>
+              <View>
+                <Text style={styles.sectionLabel}>Specs</Text>
+                <Text style={styles.specsHint}>Up to 6 key facts (e.g. Battery: 8hrs)</Text>
+              </View>
+              {specs.length < MAX_SPECS && (
+                <TouchableOpacity style={styles.addSpecBtn} onPress={addSpec}>
+                  <Plus size={14} weight="bold" color={colors.primary} />
+                  <Text style={styles.addSpecText}>Add</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {specs.map((spec, i) => (
+              <View key={i} style={styles.specRow}>
+                <View style={{ flex: 1 }}>
+                  <Input
+                    label=""
+                    value={spec.label}
+                    onChangeText={(t) => updateSpec(i, "label", t)}
+                    placeholder="Label (e.g. Battery)"
+                    style={styles.specInput as any}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Input
+                    label=""
+                    value={spec.value}
+                    onChangeText={(t) => updateSpec(i, "value", t)}
+                    placeholder="Value (e.g. 8hrs)"
+                    style={styles.specInput as any}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.removeSpecBtn}
+                  onPress={() => removeSpec(i)}
+                  hitSlop={8}
+                >
+                  <Minus size={14} weight="bold" color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+
           <Button
             label="List Item →"
             onPress={handleSubmit}
@@ -200,4 +263,23 @@ const styles = StyleSheet.create({
   catText: { ...font.caption, fontWeight: "600", color: colors.textSecondary },
   catTextActive: { color: "#fff" },
   priceRow: { flexDirection: "row", gap: spacing.sm },
+  specsHeader: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start",
+  },
+  specsHint: { ...font.caption, color: colors.textMuted, marginTop: 2 },
+  addSpecBtn: {
+    flexDirection: "row", alignItems: "center", gap: 4,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderRadius: radius.sm, borderWidth: 1.5, borderColor: colors.primary,
+  },
+  addSpecText: { ...font.caption, color: colors.primary, fontWeight: "700" },
+  specRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" },
+  specInput: { paddingVertical: 8 },
+  removeSpecBtn: {
+    width: 36, height: 36, borderRadius: radius.sm,
+    backgroundColor: colors.background,
+    borderWidth: 1, borderColor: colors.border,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 2,
+  },
 });

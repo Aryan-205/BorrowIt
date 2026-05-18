@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, Image,
-  TouchableOpacity, Alert, Dimensions,
+  TouchableOpacity, Alert, Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -10,19 +10,20 @@ import { ArrowLeft, MapPin, ShieldCheck, CalendarBlank } from "phosphor-react-na
 import { Chip } from "../../components/ui/Chip";
 import { KarmaStars } from "../../components/ui/KarmaStars";
 import { Button } from "../../components/ui/Button";
-import { authClient } from "../../lib/auth";
+import { useSession } from "../../lib/auth";
+import { BASE_URL } from "../../lib/api";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
 
 const { width: W } = Dimensions.get("window");
-const BASE_URL = "https://1l0oskvouaqvjjatva3n0-preview-4200.runable.site/";
 
 export default function ItemDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const { data: session } = authClient.useSession();
+  const { user } = useSession();
   const [days, setDays] = useState(1);
   const [imgIdx, setImgIdx] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["item", id],
@@ -46,12 +47,12 @@ export default function ItemDetailScreen() {
       }
       return res.json();
     },
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["items-near"] });
       qc.invalidateQueries({ queryKey: ["my-rentals"] });
       Alert.alert(
-        "Booked! 🎉",
-        `Your rental request is pending. The lender will generate a QR code when ready.`,
+        "Booked!",
+        "Your rental request is pending. The lender will generate a QR code when ready.",
         [{ text: "View Rentals", onPress: () => router.push("/(tabs)/rentals") }]
       );
     },
@@ -71,7 +72,7 @@ export default function ItemDetailScreen() {
   }
 
   const total = item.dailyRate * days;
-  const isOwner = item.ownerId === session?.user?.id;
+  const isOwner = item.ownerId === user?.id;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -79,7 +80,22 @@ export default function ItemDetailScreen() {
         {/* Image carousel */}
         <View style={styles.imageWrap}>
           {item.mediaUrls?.length > 0 ? (
-            <Image source={{ uri: item.mediaUrls[imgIdx] }} style={styles.image} resizeMode="cover" />
+            <FlatList
+              ref={flatListRef}
+              data={item.mediaUrls}
+              keyExtractor={(_: any, i: number) => String(i)}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={item.mediaUrls.length > 1}
+              onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+                const idx = Math.round(e.nativeEvent.contentOffset.x / W);
+                setImgIdx(idx);
+              }}
+              renderItem={({ item: uri }: { item: string }) => (
+                <Image source={{ uri }} style={styles.image} resizeMode="cover" />
+              )}
+            />
           ) : (
             <View style={[styles.image, styles.imagePlaceholder]}>
               <Text style={styles.imagePlaceholderEmoji}>📦</Text>
@@ -110,9 +126,7 @@ export default function ItemDetailScreen() {
             <Text style={styles.priceUnit}>/day</Text>
           </View>
 
-          {item.description ? (
-            <Text style={styles.description}>{item.description}</Text>
-          ) : null}
+          {item.description ? <Text style={styles.description}>{item.description}</Text> : null}
 
           {/* Owner */}
           <View style={styles.ownerCard}>
@@ -134,6 +148,21 @@ export default function ItemDetailScreen() {
             </Text>
           </View>
 
+          {/* Specs */}
+          {item.specs?.length > 0 && (
+            <View style={styles.specsSection}>
+              <Text style={styles.specsTitle}>Specs</Text>
+              <View style={styles.specsGrid}>
+                {item.specs.map((spec: { label: string; value: string }, i: number) => (
+                  <View key={i} style={styles.specChip}>
+                    <Text style={styles.specLabel}>{spec.label}</Text>
+                    <Text style={styles.specValue}>{spec.value}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Deposit info */}
           <View style={styles.depositCard}>
             <ShieldCheck size={20} color={colors.accent} weight="fill" />
@@ -144,53 +173,51 @@ export default function ItemDetailScreen() {
         </View>
 
         {/* Booking */}
-        {!isOwner && item.isAvailable && (
-          <View style={styles.bookCard}>
-            <Text style={styles.bookTitle}>Book This Item</Text>
-            {/* Day selector */}
-            <View style={styles.daySelector}>
-              <TouchableOpacity
-                style={styles.dayBtn}
-                onPress={() => setDays((d) => Math.max(1, d - 1))}
-              >
-                <Text style={styles.dayBtnText}>−</Text>
-              </TouchableOpacity>
-              <View style={styles.dayDisplay}>
-                <CalendarBlank size={16} color={colors.textSecondary} />
-                <Text style={styles.dayCount}>{days} day{days !== 1 ? "s" : ""}</Text>
-              </View>
-              <TouchableOpacity style={styles.dayBtn} onPress={() => setDays((d) => d + 1)}>
-                <Text style={styles.dayBtnText}>+</Text>
-              </TouchableOpacity>
+        <View style={styles.bookCard}>
+          <Text style={styles.bookTitle}>{isOwner ? "Your Listing" : "Book This Item"}</Text>
+          <View style={styles.daySelector}>
+            <TouchableOpacity
+              style={styles.dayBtn}
+              onPress={() => setDays((d) => Math.max(1, d - 1))}
+              disabled={isOwner}
+            >
+              <Text style={styles.dayBtnText}>−</Text>
+            </TouchableOpacity>
+            <View style={styles.dayDisplay}>
+              <CalendarBlank size={16} color={colors.textSecondary} />
+              <Text style={styles.dayCount}>{days} day{days !== 1 ? "s" : ""}</Text>
             </View>
-
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Rental total</Text>
-              <Text style={styles.totalValue}>₹{total.toFixed(0)}</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Deposit (refundable)</Text>
-              <Text style={styles.totalValue}>₹{item.securityDeposit.toFixed(0)}</Text>
-            </View>
-            <View style={[styles.totalRow, styles.grandRow]}>
-              <Text style={styles.grandLabel}>Total due</Text>
-              <Text style={styles.grandValue}>₹{(total + item.securityDeposit).toFixed(0)}</Text>
-            </View>
-
-            <Button
-              label={`Book for ₹${(total + item.securityDeposit).toFixed(0)} →`}
-              onPress={() => book.mutate()}
-              loading={book.isPending}
-              style={{ marginTop: spacing.sm }}
-            />
+            <TouchableOpacity style={styles.dayBtn} onPress={() => setDays((d) => d + 1)} disabled={isOwner}>
+              <Text style={styles.dayBtnText}>+</Text>
+            </TouchableOpacity>
           </View>
-        )}
 
-        {isOwner && (
-          <View style={styles.ownerNote}>
-            <Text style={styles.ownerNoteText}>This is your listing</Text>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Rental total</Text>
+            <Text style={styles.totalValue}>₹{total.toFixed(0)}</Text>
           </View>
-        )}
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Deposit (refundable)</Text>
+            <Text style={styles.totalValue}>₹{item.securityDeposit.toFixed(0)}</Text>
+          </View>
+          <View style={[styles.totalRow, styles.grandRow]}>
+            <Text style={styles.grandLabel}>Total due</Text>
+            <Text style={styles.grandValue}>₹{(total + item.securityDeposit).toFixed(0)}</Text>
+          </View>
+
+          <Button
+            label={
+              isOwner
+                ? "This is your listing"
+                : !item.isAvailable
+                ? "Currently unavailable"
+                : `Book for ₹${(total + item.securityDeposit).toFixed(0)} →`
+            }
+            onPress={() => { if (!isOwner && item.isAvailable) book.mutate(); }}
+            loading={book.isPending}
+            style={{ marginTop: spacing.sm, opacity: (isOwner || !item.isAvailable) ? 0.5 : 1 }}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -233,14 +260,25 @@ const styles = StyleSheet.create({
   ownerName: { ...font.labelMd, color: colors.textPrimary },
   locationRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   locationText: { ...font.caption, color: colors.textMuted },
+  specsSection: { gap: 8 },
+  specsTitle: { ...font.labelMd, color: colors.textSecondary },
+  specsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  specChip: {
+    backgroundColor: colors.background,
+    borderRadius: radius.sm,
+    borderWidth: 1, borderColor: colors.border,
+    paddingHorizontal: 12, paddingVertical: 8,
+    minWidth: 80,
+  },
+  specLabel: { ...font.caption, color: colors.textMuted, marginBottom: 2 },
+  specValue: { ...font.labelMd, color: colors.textPrimary, fontSize: 13 },
   depositCard: {
     flexDirection: "row", alignItems: "center", gap: 8,
     backgroundColor: "#EFF6FF", borderRadius: radius.sm, padding: spacing.md,
   },
   depositText: { ...font.labelMd, color: colors.accent, flex: 1 },
   bookCard: {
-    margin: spacing.margin,
-    backgroundColor: colors.surface, borderRadius: radius.md,
+    margin: spacing.margin, backgroundColor: colors.surface, borderRadius: radius.md,
     borderWidth: 1, borderColor: colors.border, padding: spacing.md,
     gap: spacing.sm, ...shadow.ambient,
   },
@@ -262,8 +300,7 @@ const styles = StyleSheet.create({
   grandValue: { ...font.headlineMd, color: colors.primary },
   ownerNote: {
     margin: spacing.margin, padding: spacing.md,
-    backgroundColor: colors.background, borderRadius: radius.md,
-    alignItems: "center",
+    backgroundColor: colors.background, borderRadius: radius.md, alignItems: "center",
   },
   ownerNoteText: { ...font.labelMd, color: colors.textMuted },
 });

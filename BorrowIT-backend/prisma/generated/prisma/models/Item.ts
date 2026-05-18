@@ -78,6 +78,7 @@ export type ItemCountAggregateOutputType = {
   lat: number
   lng: number
   isAvailable: number
+  specs: number
   ownerId: number
   createdAt: number
   updatedAt: number
@@ -137,6 +138,7 @@ export type ItemCountAggregateInputType = {
   lat?: true
   lng?: true
   isAvailable?: true
+  specs?: true
   ownerId?: true
   createdAt?: true
   updatedAt?: true
@@ -239,6 +241,7 @@ export type ItemGroupByOutputType = {
   lat: number | null
   lng: number | null
   isAvailable: boolean
+  specs: runtime.JsonValue | null
   ownerId: string
   createdAt: Date
   updatedAt: Date
@@ -277,6 +280,7 @@ export type ItemWhereInput = {
   lat?: Prisma.FloatNullableFilter<"Item"> | number | null
   lng?: Prisma.FloatNullableFilter<"Item"> | number | null
   isAvailable?: Prisma.BoolFilter<"Item"> | boolean
+  specs?: Prisma.JsonNullableFilter<"Item">
   ownerId?: Prisma.StringFilter<"Item"> | string
   createdAt?: Prisma.DateTimeFilter<"Item"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Item"> | Date | string
@@ -294,6 +298,7 @@ export type ItemOrderByWithRelationInput = {
   lat?: Prisma.SortOrderInput | Prisma.SortOrder
   lng?: Prisma.SortOrderInput | Prisma.SortOrder
   isAvailable?: Prisma.SortOrder
+  specs?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -314,6 +319,7 @@ export type ItemWhereUniqueInput = Prisma.AtLeast<{
   lat?: Prisma.FloatNullableFilter<"Item"> | number | null
   lng?: Prisma.FloatNullableFilter<"Item"> | number | null
   isAvailable?: Prisma.BoolFilter<"Item"> | boolean
+  specs?: Prisma.JsonNullableFilter<"Item">
   ownerId?: Prisma.StringFilter<"Item"> | string
   createdAt?: Prisma.DateTimeFilter<"Item"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Item"> | Date | string
@@ -331,6 +337,7 @@ export type ItemOrderByWithAggregationInput = {
   lat?: Prisma.SortOrderInput | Prisma.SortOrder
   lng?: Prisma.SortOrderInput | Prisma.SortOrder
   isAvailable?: Prisma.SortOrder
+  specs?: Prisma.SortOrderInput | Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -354,6 +361,7 @@ export type ItemScalarWhereWithAggregatesInput = {
   lat?: Prisma.FloatNullableWithAggregatesFilter<"Item"> | number | null
   lng?: Prisma.FloatNullableWithAggregatesFilter<"Item"> | number | null
   isAvailable?: Prisma.BoolWithAggregatesFilter<"Item"> | boolean
+  specs?: Prisma.JsonNullableWithAggregatesFilter<"Item">
   ownerId?: Prisma.StringWithAggregatesFilter<"Item"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Item"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Item"> | Date | string
@@ -369,6 +377,7 @@ export type ItemCreateInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutItemsInput
@@ -385,6 +394,7 @@ export type ItemUncheckedCreateInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -401,6 +411,7 @@ export type ItemUpdateInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutItemsNestedInput
@@ -417,6 +428,7 @@ export type ItemUncheckedUpdateInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -433,6 +445,7 @@ export type ItemCreateManyInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -448,6 +461,7 @@ export type ItemUpdateManyMutationInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -462,6 +476,7 @@ export type ItemUncheckedUpdateManyInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -495,6 +510,7 @@ export type ItemCountOrderByAggregateInput = {
   lat?: Prisma.SortOrder
   lng?: Prisma.SortOrder
   isAvailable?: Prisma.SortOrder
+  specs?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -622,6 +638,7 @@ export type ItemCreateWithoutOwnerInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   rentals?: Prisma.RentalCreateNestedManyWithoutItemInput
@@ -637,6 +654,7 @@ export type ItemUncheckedCreateWithoutOwnerInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   rentals?: Prisma.RentalUncheckedCreateNestedManyWithoutItemInput
@@ -681,6 +699,7 @@ export type ItemScalarWhereInput = {
   lat?: Prisma.FloatNullableFilter<"Item"> | number | null
   lng?: Prisma.FloatNullableFilter<"Item"> | number | null
   isAvailable?: Prisma.BoolFilter<"Item"> | boolean
+  specs?: Prisma.JsonNullableFilter<"Item">
   ownerId?: Prisma.StringFilter<"Item"> | string
   createdAt?: Prisma.DateTimeFilter<"Item"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Item"> | Date | string
@@ -696,6 +715,7 @@ export type ItemCreateWithoutRentalsInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutItemsInput
@@ -711,6 +731,7 @@ export type ItemUncheckedCreateWithoutRentalsInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -742,6 +763,7 @@ export type ItemUpdateWithoutRentalsInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutItemsNestedInput
@@ -757,6 +779,7 @@ export type ItemUncheckedUpdateWithoutRentalsInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -772,6 +795,7 @@ export type ItemCreateManyOwnerInput = {
   lat?: number | null
   lng?: number | null
   isAvailable?: boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -786,6 +810,7 @@ export type ItemUpdateWithoutOwnerInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rentals?: Prisma.RentalUpdateManyWithoutItemNestedInput
@@ -801,6 +826,7 @@ export type ItemUncheckedUpdateWithoutOwnerInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rentals?: Prisma.RentalUncheckedUpdateManyWithoutItemNestedInput
@@ -816,6 +842,7 @@ export type ItemUncheckedUpdateManyWithoutOwnerInput = {
   lat?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lng?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isAvailable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  specs?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -861,6 +888,7 @@ export type ItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lat?: boolean
   lng?: boolean
   isAvailable?: boolean
+  specs?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -879,6 +907,7 @@ export type ItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lat?: boolean
   lng?: boolean
   isAvailable?: boolean
+  specs?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -895,6 +924,7 @@ export type ItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lat?: boolean
   lng?: boolean
   isAvailable?: boolean
+  specs?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -911,12 +941,13 @@ export type ItemSelectScalar = {
   lat?: boolean
   lng?: boolean
   isAvailable?: boolean
+  specs?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "images" | "title" | "description" | "dailyRate" | "securityDeposit" | "lat" | "lng" | "isAvailable" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["item"]>
+export type ItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "images" | "title" | "description" | "dailyRate" | "securityDeposit" | "lat" | "lng" | "isAvailable" | "specs" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["item"]>
 export type ItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   rentals?: boolean | Prisma.Item$rentalsArgs<ExtArgs>
@@ -945,6 +976,7 @@ export type $ItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lat: number | null
     lng: number | null
     isAvailable: boolean
+    specs: runtime.JsonValue | null
     ownerId: string
     createdAt: Date
     updatedAt: Date
@@ -1382,6 +1414,7 @@ export interface ItemFieldRefs {
   readonly lat: Prisma.FieldRef<"Item", 'Float'>
   readonly lng: Prisma.FieldRef<"Item", 'Float'>
   readonly isAvailable: Prisma.FieldRef<"Item", 'Boolean'>
+  readonly specs: Prisma.FieldRef<"Item", 'Json'>
   readonly ownerId: Prisma.FieldRef<"Item", 'String'>
   readonly createdAt: Prisma.FieldRef<"Item", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Item", 'DateTime'>

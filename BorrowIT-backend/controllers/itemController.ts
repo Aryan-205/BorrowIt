@@ -4,6 +4,7 @@ import {
   findItemById,
   itemToClient,
   listClientItems,
+  listMyItems,
   type CreateItemBody,
   updateItem as updateItemModel,
   deleteItem as deleteItemModel,
@@ -21,7 +22,7 @@ export async function listItems(_req: Request, res: Response) {
 
 export async function postItem(req: Request, res: Response) {
   try {
-    const result = await createItem(req.body as CreateItemBody);
+    const result = await createItem({ ...(req.body as CreateItemBody), ownerId: req.userId! });
     if (!result.ok) {
       res.status(400).json({ message: result.message });
       return;
@@ -60,6 +61,16 @@ export async function updateItem(req: Request, res: Response) {
   } catch (err) {
     console.error("updateItem:", err);
     res.status(500).json({ message: "Failed to update item" });
+  }
+}
+
+export async function listMyItemsController(req: Request, res: Response) {
+  try {
+    const items = await listMyItems(req.userId!);
+    res.json({ items });
+  } catch (err) {
+    console.error("listMyItems:", err);
+    res.status(500).json({ message: "Failed to load your items" });
   }
 }
 

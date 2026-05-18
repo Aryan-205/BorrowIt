@@ -1,49 +1,104 @@
 import type { Request, Response } from "express";
-import { API_USER_ID } from "../config.js";
 import {
   bookRental,
   findRentalById,
   generateHandoverQr,
   listRentalsForUser,
-  rentalToClient,
+  scanHandoverQr,
+  updateRentalStatus,
 } from "../models/rentalModel.js";
 
-export function listRentals(_req: Request, res: Response) {
-  const uid = API_USER_ID;
-  res.json({ rentals: listRentalsForUser(uid) });
+export async function listRentals(req: Request, res: Response) {
+  try {
+    const rentals = await listRentalsForUser(req.userId!);
+    res.json({ rentals });
+  } catch (err) {
+    console.error("listRentals:", err);
+    res.status(500).json({ message: "Failed to load rentals" });
+  }
 }
 
-export function getRentalById(req: Request, res: Response) {
+export async function getRentalById(req: Request, res: Response) {
   const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
-  const r = findRentalById(id);
-  if (!r) {
-    res.status(404).json({ message: "Rental not found" });
-    return;
+  try {
+    const rental = await findRentalById(id);
+    if (!rental) {
+      res.status(404).json({ message: "Rental not found" });
+      return;
+    }
+    res.json({ rental });
+  } catch (err) {
+    console.error("getRentalById:", err);
+    res.status(500).json({ message: "Failed to load rental" });
   }
-  res.json({ rental: rentalToClient(r) });
 }
 
 export async function postBookRental(req: Request, res: Response) {
   const { itemId, totalDays } = req.body as { itemId?: string; totalDays?: number };
   try {
-    const result = await bookRental(itemId ?? "", totalDays ?? 0, API_USER_ID);
+    const result = await bookRental(itemId ?? "", totalDays ?? 0, req.userId!);
     if (!result.ok) {
       res.status(400).json({ message: result.message });
       return;
     }
-    res.json({ rental: rentalToClient(result.rental) });
+    res.status(201).json({ rental: result.rental });
   } catch (err) {
     console.error("postBookRental:", err);
     res.status(500).json({ message: "Failed to book rental" });
   }
 }
 
-export function postGenerateQr(req: Request, res: Response) {
+export async function postGenerateQr(req: Request, res: Response) {
   const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
-  const result = generateHandoverQr(id);
-  if (!result.ok) {
-    res.status(404).json({ message: result.message });
+  try {
+    const result = await generateHandoverQr(id, req.userId!);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.json({ qrData: result.qrData, token: result.token });
+  } catch (err) {
+    console.error("postGenerateQr:", err);
+    res.status(500).json({ message: "Failed to generate QR" });
+  }
+}
+
+export async function postScanQr(req: Request, res: Response) {
+  const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+  const { token } = req.body as { token?: string };
+  if (!token) {
+    res.status(400).json({ message: "token is required" });
     return;
   }
-  res.json({ qrData: result.qrData, token: result.token });
+  try {
+    const result = await scanHandoverQr(id, token, req.userId!);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.json({ rental: result.rental });
+  } catch (err) {
+    console.error("postScanQr:", err);
+    res.status(500).json({ message: "Failed to scan QR" });
+  }
+}
+
+export async function patchRentalStatus(req: Request, res: Response) {
+  const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+  const { action } = req.body as { action?: string };
+  if (!action) {
+    res.status(400).json({ message: "action is required (approve | complete | dispute)" });
+    return;
+  }
+  try {
+    const result = await updateRentalStatus(id, action as any, req.userId!);
+    if (!result.ok) {
+      res.status(400).json({ message: result.message });
+      return;
+    }
+    res.json({ rental: result.rental });
+  } catch (err) {
+    console.error("patchRentalStatus:", err);
+    res.status(500).json({ message: "Failed to update rental status" });
+  }
 }

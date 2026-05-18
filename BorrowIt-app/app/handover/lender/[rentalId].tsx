@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, QrCode, CheckCircle } from "phosphor-react-native";
 import { colors, font, spacing, radius, shadow } from "../../../lib/theme";
 
-const BASE_URL = "https://1l0oskvouaqvjjatva3n0-preview-4200.runable.site/";
+import { BASE_URL } from "../../../lib/api";
 
 // Simple QR code rendered as matrix of dots (text-based visual)
 function QRDisplay({ data }: { data: string }) {
@@ -78,7 +78,7 @@ export default function LenderHandoverScreen() {
       try {
         const res = await fetch(`${BASE_URL}api/rentals/${rentalId}`, { credentials: "include" });
         const data = await res.json() as any;
-        if (data.rental?.status === "ACTIVE") {
+        if (data.rental?.status === "APPROVED") {
           setVerified(true);
           clearInterval(poll);
         }
