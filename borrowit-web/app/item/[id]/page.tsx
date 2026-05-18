@@ -249,7 +249,7 @@ export default function ItemDetailPage() {
 
           {/* Right column — desktop sticky booking */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24 space-y-4">
+            <div className="sticky top-0 space-y-4">
               <BookingSidebar
                 item={item}
                 days={days}

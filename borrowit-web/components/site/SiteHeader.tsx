@@ -41,7 +41,7 @@ export function SiteHeader({
       <header className="sticky top-0 z-40 border-b border-[#EEEEEE] bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-3 md:gap-4 md:px-6 lg:px-8">
           <Link href="/discover" className="shrink-0 text-lg font-bold tracking-tight text-black md:text-xl">
-            Borrow-It
+            Snip
           </Link>
 
           <div className="relative mx-auto hidden min-w-0 max-w-xl flex-1 md:flex">
