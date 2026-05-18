@@ -21,8 +21,15 @@ export type User = {
   bio?: string | null;
   karma?: number;
   karmaCount?: number;
+  karmaScore?: number;
   isVerified?: boolean;
-  avatar?: string;
+  avatar?: string | null;
+  avatarUrl?: string | null;
+  createdAt?: string;
+  rentalCount?: number;
+  completedRentals?: number;
+  reliabilityPct?: number;
+  itemCount?: number;
   phoneNumber?: string | null;
   address?: string | null;
   city?: string | null;

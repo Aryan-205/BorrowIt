@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle } from "phosphor-react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { BASE_URL } from "../../../lib/api";
+import { Alert } from "../../../components/ui/Alert";
+import { apiFetch } from "../../../lib/api";
 import { colors, font, spacing, radius } from "../../../lib/theme";
 
 export default function BorrowerHandoverScreen() {
@@ -20,7 +21,7 @@ export default function BorrowerHandoverScreen() {
 
   const scanQR = useMutation({
     mutationFn: async (token: string) => {
-      const res = await fetch(`${BASE_URL}api/rentals/${rentalId}/scan-qr`, {
+      const res = await apiFetch(`api/rentals/${rentalId}/scan-qr`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

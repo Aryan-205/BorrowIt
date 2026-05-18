@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { MagnifyingGlass, SlidersHorizontal, X } from "phosphor-react-native";
-import { BASE_URL } from "../../lib/api";
+import { apiFetch } from "../../lib/api";
 import { ItemCard } from "../../components/ItemCard";
 import { SkeletonCard } from "../../components/ui/SkeletonCard";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
@@ -136,7 +136,7 @@ export default function DiscoverScreen() {
   const { data, isLoading } = useQuery({
     queryKey: ["items-near"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}api/items`);
+      const res = await apiFetch("api/items");
       if (!res.ok) throw new Error("Failed to load items");
       return res.json();
     },

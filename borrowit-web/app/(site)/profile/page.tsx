@@ -72,10 +72,10 @@ export default function ProfilePage() {
   if (isLoadingMe) return <div className="flex items-center justify-center h-screen">Loading...</div>;
   if (!me) return <div className="flex items-center justify-center h-screen">User not found</div>;
   const user = me.user;
-
-  console.log(user)
-
-  const trustedSince = new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  const avatarSrc = user.avatar ?? user.avatarUrl;
+  const trustedSince = user.createdAt
+    ? `Member since ${new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long" })}`
+    : "";
   
   return (
     <div
@@ -90,7 +90,7 @@ export default function ProfilePage() {
         >
           <div className="flex flex-col items-center text-center lg:items-center lg:text-center">
             {/* Avatar */}
-            <Image src={user.avatar ?? "https://imgs.search.brave.com/7p-MC2-TJ5Vg4FozPjkuOrugYZpPKCr73_P26JbJN3w/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzExLzY4LzUwLzU3/LzM2MF9GXzExNjg1/MDU3OTRfSUJDRWlh/ZnNJckhGSjA5ZTY1/UDJ2aDUxMTVDMVhJ/N2UuanBn"} alt={user.username ?? ""} width={100} height={100} className="rounded-full border border-[#EEEEEE]" unoptimized />
+            <Image src={avatarSrc ?? "https://imgs.search.brave.com/7p-MC2-TJ5Vg4FozPjkuOrugYZpPKCr73_P26JbJN3w/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzExLzY4LzUwLzU3/LzM2MF9GXzExNjg1/MDU3OTRfSUJDRWlh/ZnNJckhGSjA5ZTY1/UDJ2aDUxMTVDMVhJ/N2UuanBn"} alt={formatDisplayName(user.username)} width={100} height={100} className="rounded-full border border-[#EEEEEE]" unoptimized />
 
             {/* Name */}
             <div className="mt-4">
@@ -160,7 +160,7 @@ export default function ProfilePage() {
 
             <div className="mt-5">
               <p className="text-lg font-semibold text-black">Bio</p>
-              <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{user.bio}</p>
+              <p className="mt-2 text-sm leading-relaxed text-[#4B5563]">{user.bio ?? "No bio yet."}</p>
             </div>
           </div>
         </div>

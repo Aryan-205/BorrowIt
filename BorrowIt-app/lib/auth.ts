@@ -1,14 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BASE_URL } from "./api";
+import { apiFetch, setStoredToken } from "./api";
 
-async function apiFetch(path: string, init?: RequestInit) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-  });
-  return res;
-}
+export { apiFetch } from "./api";
 
 export async function signIn(email: string, password: string) {
   const res = await apiFetch("api/auth/signin", {
@@ -16,7 +9,10 @@ export async function signIn(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error((data as any).message ?? "Login failed");
+  if (!res.ok) throw new Error((data as { message?: string }).message ?? "Login failed");
+  if (typeof (data as { token?: string }).token === "string") {
+    await setStoredToken((data as { token: string }).token);
+  }
   return data;
 }
 
@@ -26,26 +22,31 @@ export async function signUp(name: string, email: string, password: string) {
     body: JSON.stringify({ name, email, password }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error((data as any).message ?? "Registration failed");
+  if (!res.ok) throw new Error((data as { message?: string }).message ?? "Registration failed");
+  if (typeof (data as { token?: string }).token === "string") {
+    await setStoredToken((data as { token: string }).token);
+  }
   return data;
 }
 
 export async function signOut() {
   await apiFetch("api/auth/signout", { method: "POST" });
+  await setStoredToken(null);
 }
 
 export function useSession() {
   const { data, isLoading } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}api/users/me`, { credentials: "include" });
+      const res = await apiFetch("api/users/me");
       if (res.status === 401) return null;
+      if (!res.ok) throw new Error("Failed to load session");
       return res.json();
     },
     retry: false,
     staleTime: 60_000,
   });
-  const user = (data as any)?.user ?? null;
+  const user = (data as { user?: unknown } | null)?.user ?? null;
   return { user, isLoading };
 }
 

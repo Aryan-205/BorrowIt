@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { spacing, radius } from "@/lib/theme";
 import { useSignUp } from "@/hooks/useAuth";
 
@@ -58,11 +59,11 @@ export default function RegisterPage() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
         />
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
           placeholder="Min. 8 characters"
         />
         <Button

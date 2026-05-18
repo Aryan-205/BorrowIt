@@ -10,8 +10,8 @@ export async function postSignUp(req: Request, res: Response) {
       res.status(status).json({ message: result.message });
       return;
     }
-    setSessionCookie(res, result.user.id);
-    res.status(201).json({ user: result.user });
+    const token = setSessionCookie(res, result.user.id);
+    res.status(201).json({ user: result.user, token });
   } catch (err) {
     console.error("postSignUp:", err);
     res.status(500).json({ message: "Failed to create account" });
@@ -25,8 +25,8 @@ export async function postSignIn(req: Request, res: Response) {
       res.status(401).json({ message: result.message });
       return;
     }
-    setSessionCookie(res, result.user.id);
-    res.json({ user: result.user });
+    const token = setSessionCookie(res, result.user.id);
+    res.json({ user: result.user, token });
   } catch (err) {
     console.error("postSignIn:", err);
     res.status(500).json({ message: "Failed to sign in" });

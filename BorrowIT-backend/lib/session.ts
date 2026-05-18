@@ -58,18 +58,30 @@ function parseCookieHeader(header: string | undefined, name: string): string | u
   return undefined;
 }
 
-export function getSessionUserId(req: Request): string | null {
-  return verifySessionToken(parseCookieHeader(req.headers.cookie, COOKIE_NAME));
+function sessionTokenFromRequest(req: Request): string | undefined {
+  const cookie = parseCookieHeader(req.headers.cookie, COOKIE_NAME);
+  if (cookie) return cookie;
+  const auth = req.headers.authorization;
+  if (typeof auth === "string" && auth.startsWith("Bearer ")) {
+    return auth.slice(7).trim();
+  }
+  return undefined;
 }
 
-export function setSessionCookie(res: Response, userId: string): void {
-  res.cookie(COOKIE_NAME, createSessionToken(userId), {
+export function getSessionUserId(req: Request): string | null {
+  return verifySessionToken(sessionTokenFromRequest(req));
+}
+
+export function setSessionCookie(res: Response, userId: string): string {
+  const token = createSessionToken(userId);
+  res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: MAX_AGE_MS,
     path: "/",
   });
+  return token;
 }
 
 export function clearSessionCookie(res: Response): void {

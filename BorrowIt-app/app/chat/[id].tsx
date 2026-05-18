@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, PaperPlaneTilt, WifiHigh, WifiSlash } from "phosphor-react-native";
 import { useSession } from "../../lib/auth";
-import { BASE_URL } from "../../lib/api";
+import { BASE_URL, apiFetch } from "../../lib/api";
 import { colors, font, spacing, radius } from "../../lib/theme";
 
 // Derive WebSocket URL from BASE_URL (https:// → wss://, http:// → ws://)
@@ -97,7 +97,7 @@ export default function ChatScreen() {
     } catch (err) {
       setError("WebSocket not supported — falling back to polling");
       // Fallback: load messages via REST
-      fetch(`${BASE_URL}api/chats/${rentalId}`, { credentials: "include" })
+      apiFetch(`api/chats/${rentalId}`)
         .then((r) => r.json())
         .then((d: any) => {
           setMessages(d?.chat?.messages ?? d?.messages ?? []);
@@ -127,10 +127,8 @@ export default function ChatScreen() {
       setText("");
     } else {
       // Fallback REST send
-      fetch(`${BASE_URL}api/chats/${rentalId}/messages`, {
+      apiFetch(`api/chats/${rentalId}/messages`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ content: trimmed }),
       })
         .then((r) => r.json())

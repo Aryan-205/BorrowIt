@@ -11,6 +11,16 @@ export function userToClient(user: User) {
     karmaCount: user.karmaCount,
     isVerified: user.isVerified,
     avatarUrl: user.avatarUrl,
+    avatar: user.avatarUrl,
+    createdAt: user.createdAt.toISOString(),
+    phoneNumber: user.phoneNumber,
+    address: user.address,
+    city: user.city,
+    state: user.state,
+    zip: user.zip,
+    country: user.country,
+    latitude: user.latitude,
+    longitude: user.longitude,
   };
 }
 

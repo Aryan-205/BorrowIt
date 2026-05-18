@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, KeyboardAvoidingView,
-  Platform, ScrollView, TouchableOpacity, Alert,
+  Platform, ScrollView, TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { signIn, useInvalidateSession } from "../../lib/auth";
+import { Alert } from "../../components/ui/Alert";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import { PasswordInput } from "../../components/ui/PasswordInput";
 import { colors, font, spacing, radius } from "../../lib/theme";
 
 export default function LoginScreen() {
@@ -55,11 +57,10 @@ export default function LoginScreen() {
               autoCapitalize="none"
               placeholder="you@example.com"
             />
-            <Input
+            <PasswordInput
               label="Password"
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
               placeholder="••••••••"
             />
             <Button

@@ -74,6 +74,23 @@ export async function findItemById(id: string): Promise<ItemRow | null> {
   return it ? rowFromDb(it) : null;
 }
 
+export async function listOwnerItems(
+  ownerId: string,
+  excludeId?: string,
+  limit = 10,
+): Promise<ReturnType<typeof itemToClient>[]> {
+  const rows = await prisma.item.findMany({
+    where: {
+      ownerId,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    include: ownerInclude,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return rows.map((it) => itemToClient(rowFromDb(it)));
+}
+
 export type CreateItemBody = Partial<ItemRow> & Record<string, unknown>;
 
 export async function createItem(

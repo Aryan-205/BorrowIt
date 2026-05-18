@@ -2,6 +2,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useSession } from "../lib/auth";
+import { AlertProvider } from "../components/ui/Alert";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,9 @@ function AuthGate() {
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate />
+      <AlertProvider>
+        <AuthGate />
+      </AlertProvider>
     </QueryClientProvider>
   );
 }

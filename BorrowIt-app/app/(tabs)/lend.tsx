@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  KeyboardAvoidingView, Platform, Alert, Image,
+  KeyboardAvoidingView, Platform, Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { Plus, X, ImageSquare, Minus } from "phosphor-react-native";
-import { BASE_URL } from "../../lib/api";
+import { apiFetch } from "../../lib/api";
+import { Alert } from "../../components/ui/Alert";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
@@ -43,7 +44,7 @@ export default function LendScreen() {
 
   const createItem = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${BASE_URL}api/items`, {
+      const res = await apiFetch("api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

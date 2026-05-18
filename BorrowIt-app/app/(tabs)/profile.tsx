@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { SignOut, CheckCircle } from "phosphor-react-native";
 import { useSession, signOut } from "../../lib/auth";
-import { BASE_URL } from "../../lib/api";
+import { apiFetch } from "../../lib/api";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
 
 export default function ProfileScreen() {
@@ -19,7 +19,7 @@ export default function ProfileScreen() {
   const { data } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}api/users/me`, { credentials: "include" });
+      const res = await apiFetch("api/users/me");
       return res.json();
     },
     enabled: !!user,
@@ -28,7 +28,7 @@ export default function ProfileScreen() {
   const { data: itemsData, refetch: refetchItems } = useQuery({
     queryKey: ["my-items"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}api/items/my`, { credentials: "include" });
+      const res = await apiFetch("api/items/my");
       return res.json();
     },
     enabled: !!user,

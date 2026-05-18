@@ -9,6 +9,8 @@ import {
   updateUser,
 } from "@/services/user";
 
+export type { User } from "@/types/type";
+
 export const meQueryKey = ["users", "me"] as const;
 export const userQueryKey = (id: string) => ["users", id] as const;
 

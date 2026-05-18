@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Alert, Modal, ScrollView } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Modal, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChatCircle, QrCode, CheckCircle, WarningCircle, FileText, X, CalendarBlank, ShieldCheck, Receipt } from "phosphor-react-native";
 import { useSession } from "../../lib/auth";
-import { BASE_URL } from "../../lib/api";
+import { apiFetch } from "../../lib/api";
+import { Alert } from "../../components/ui/Alert";
 import { Chip } from "../../components/ui/Chip";
 import { colors, font, spacing, radius, shadow } from "../../lib/theme";
 
@@ -113,7 +114,7 @@ export default function RentalsScreen() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["my-rentals"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}api/rentals`, { credentials: "include" });
+      const res = await apiFetch("api/rentals");
       return res.json();
     },
     enabled: !!user,
@@ -122,7 +123,7 @@ export default function RentalsScreen() {
   // FIX: backend expects { action } not { status }
   const updateStatus = useMutation({
     mutationFn: async ({ id, action }: { id: string; action: string }) => {
-      const res = await fetch(`${BASE_URL}api/rentals/${id}/status`, {
+      const res = await apiFetch(`api/rentals/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

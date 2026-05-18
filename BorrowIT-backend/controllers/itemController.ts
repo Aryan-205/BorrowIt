@@ -5,6 +5,7 @@ import {
   itemToClient,
   listClientItems,
   listMyItems,
+  listOwnerItems,
   type CreateItemBody,
   updateItem as updateItemModel,
   deleteItem as deleteItemModel,
@@ -42,7 +43,8 @@ export async function getItemById(req: Request, res: Response) {
       res.status(404).json({ message: "Item not found" });
       return;
     }
-    res.json({ item: itemToClient(it) });
+    const ownerItems = await listOwnerItems(it.ownerId, id);
+    res.json({ item: itemToClient(it), ownerItems });
   } catch (err) {
     console.error("getItemById:", err);
     res.status(500).json({ message: "Failed to load item" });

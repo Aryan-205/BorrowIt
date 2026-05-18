@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/user/BorrowIt/BorrowIT-backend/prisma/generated/prisma",
+      "value": "/Users/aryan/Documents/others/BorrowIt/BorrowIt-backend/prisma/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -32,7 +32,7 @@ const config: runtime.GetPrismaClientConfig = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       },
       {
@@ -41,7 +41,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/user/BorrowIt/BorrowIT-backend/prisma/schema.prisma",
+    "sourceFilePath": "/Users/aryan/Documents/others/BorrowIt/BorrowIt-backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../..",
@@ -51,6 +51,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

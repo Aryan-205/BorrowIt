@@ -15,7 +15,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.borrowit.r7k2.runable",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "package": "com.borrowit.r7k2.runable",
@@ -23,7 +28,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -39,8 +45,6 @@
       ],
       "expo-web-browser"
     ],
-    "extra": {
-      "apiUrl": "https://county-flavor-volleyball-jar.trycloudflare.com/"
-    }
+    "extra": {}
   }
 }

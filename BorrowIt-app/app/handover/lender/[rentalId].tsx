@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -9,7 +9,8 @@ import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, QrCode, CheckCircle } from "phosphor-react-native";
 import { colors, font, spacing, radius, shadow } from "../../../lib/theme";
 
-import { BASE_URL } from "../../../lib/api";
+import { Alert } from "../../../components/ui/Alert";
+import { apiFetch } from "../../../lib/api";
 
 // Simple QR code rendered as matrix of dots (text-based visual)
 function QRDisplay({ data }: { data: string }) {
@@ -41,7 +42,7 @@ export default function LenderHandoverScreen() {
 
   const generateQR = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${BASE_URL}api/rentals/${rentalId}/generate-qr`, {
+      const res = await apiFetch(`api/rentals/${rentalId}/generate-qr`, {
         method: "POST",
         credentials: "include",
       });
@@ -76,7 +77,7 @@ export default function LenderHandoverScreen() {
     if (!rentalId) return;
     const poll = setInterval(async () => {
       try {
-        const res = await fetch(`${BASE_URL}api/rentals/${rentalId}`, { credentials: "include" });
+        const res = await apiFetch(`api/rentals/${rentalId}`);
         const data = await res.json() as any;
         if (data.rental?.status === "APPROVED") {
           setVerified(true);

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { spacing, radius } from "@/lib/theme";
 import { useSignIn } from "@/hooks/useAuth";
 
@@ -53,11 +54,11 @@ export default function LoginPage() {
           autoComplete="email"
           placeholder="you@example.com"
         />
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           placeholder="••••••••"
         />
         <Button label="Sign In" onClick={handleLogin} loading={loading} className="w-full cursor-pointer hover:opacity-90 active:scale-95 transition-all duration-100" />
