@@ -96,9 +96,16 @@ export default function ItemDetailScreen() {
     mediaUrls: params.imageUrl ? [params.imageUrl] : [],
     ownerName: params.ownerName ?? "Owner",
     ownerId: "",
-    specs: [],
+    specs: [] as any[],
     lat: 19.076,
     lng: 72.8777,
+    isAvailable: false,
+    ownerKarma: 0,
+    ownerKarmaCount: 0,
+    ownerIsVerified: false,
+    ownerAvgRating: 0,
+    ownerReviewCount: 0,
+    ownerAvatarUrl: null,
   } : null;
 
   const item = isFeatured ? featuredItem : data?.item;
