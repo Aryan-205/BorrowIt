@@ -42,9 +42,9 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <View style={styles.logoWrap}>
-              <Text style={styles.logoIcon}>↕</Text>
+              <Text style={styles.logoIcon}>B</Text>
             </View>
-            <Text style={styles.wordmark}>Snip</Text>
+            <Text style={styles.wordmark}>BorrowIt</Text>
             <Text style={styles.tagline}>Rent anything. From anyone.</Text>
           </View>
 

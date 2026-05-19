@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  KeyboardAvoidingView, Platform, Image,
+  KeyboardAvoidingView, Platform, Image, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
-import { Plus, X, ImageSquare, Minus } from "phosphor-react-native";
+import * as Location from "expo-location";
+import { Plus, X, ImageSquare, Minus, MapPin, NavigationArrow } from "phosphor-react-native";
 import { apiFetch } from "../../lib/api";
 import { Alert } from "../../components/ui/Alert";
 import { Button } from "../../components/ui/Button";
@@ -28,6 +29,12 @@ export default function LendScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [specs, setSpecs] = useState<SpecEntry[]>([{ label: "", value: "" }]);
 
+  // Location state
+  const [addressText, setAddressText] = useState("");
+  const [locating, setLocating] = useState(false);
+  const [itemLat, setItemLat] = useState<number | null>(null);
+  const [itemLng, setItemLng] = useState<number | null>(null);
+
   const addSpec = () => {
     if (specs.length < MAX_SPECS) setSpecs((prev) => [...prev, { label: "", value: "" }]);
   };
@@ -42,6 +49,32 @@ export default function LendScreen() {
 
   const cleanSpecs = () => specs.filter((s) => s.label.trim() && s.value.trim());
 
+  const detectLocation = async () => {
+    setLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Enable location in settings.");
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setItemLat(pos.coords.latitude);
+      setItemLng(pos.coords.longitude);
+      const geocode = await Location.reverseGeocodeAsync({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+      if (geocode.length > 0) {
+        const g = geocode[0];
+        setAddressText([g.street, g.district, g.city].filter(Boolean).join(", "));
+      }
+    } catch {
+      Alert.alert("Could not detect location");
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const createItem = useMutation({
     mutationFn: async () => {
       const res = await apiFetch("api/items", {
@@ -54,8 +87,8 @@ export default function LendScreen() {
           category,
           dailyRate: parseFloat(dailyRate),
           securityDeposit: parseFloat(deposit),
-          lat: 19.076 + (Math.random() - 0.5) * 0.1,
-          lng: 72.8777 + (Math.random() - 0.5) * 0.1,
+          lat: itemLat ?? (19.076 + (Math.random() - 0.5) * 0.1),
+          lng: itemLng ?? (72.8777 + (Math.random() - 0.5) * 0.1),
           mediaUrls: images,
           specs: cleanSpecs(),
         }),
@@ -70,6 +103,7 @@ export default function LendScreen() {
       Alert.alert("Listed!", "Your item is now live on the marketplace.", [{ text: "OK" }]);
       setTitle(""); setDescription(""); setDailyRate(""); setDeposit("");
       setImages([]); setSpecs([{ label: "", value: "" }]);
+      setAddressText(""); setItemLat(null); setItemLng(null);
     },
     onError: (e: any) => Alert.alert("Error", e.message ?? "Failed to list item"),
   });
@@ -220,6 +254,40 @@ export default function LendScreen() {
             ))}
           </View>
 
+          {/* Location */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Item Location</Text>
+            <TouchableOpacity
+              style={styles.gpsBtn}
+              onPress={detectLocation}
+              disabled={locating}
+              activeOpacity={0.75}
+            >
+              {locating ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <NavigationArrow size={16} weight="fill" color={colors.primary} />
+              )}
+              <Text style={styles.gpsBtnText}>
+                {locating ? "Detecting…" : itemLat ? "Location detected ✓" : "Use current location"}
+              </Text>
+            </TouchableOpacity>
+            <Input
+              label=""
+              value={addressText}
+              onChangeText={setAddressText}
+              placeholder="Or type address / area"
+            />
+            {itemLat && (
+              <View style={styles.coordsBadge}>
+                <MapPin size={12} color={colors.primary} />
+                <Text style={styles.coordsText}>
+                  {itemLat.toFixed(4)}, {itemLng?.toFixed(4)}
+                </Text>
+              </View>
+            )}
+          </View>
+
           <Button
             label="List Item →"
             onPress={handleSubmit}
@@ -283,4 +351,20 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     marginBottom: 2,
   },
+  gpsBtn: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    borderWidth: 1.5, borderColor: colors.primary,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md, paddingVertical: 10,
+    backgroundColor: "#EFF6FF",
+  },
+  gpsBtnText: { ...font.labelMd, color: colors.primary, fontWeight: "600" },
+  coordsBadge: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    backgroundColor: colors.background,
+    borderRadius: radius.full,
+    paddingHorizontal: 10, paddingVertical: 5,
+    alignSelf: "flex-start",
+  },
+  coordsText: { ...font.caption, color: colors.textMuted },
 });

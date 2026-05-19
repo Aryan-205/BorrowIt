@@ -6,27 +6,26 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, QrCode, CheckCircle } from "phosphor-react-native";
+import { ArrowLeft, CheckCircle } from "phosphor-react-native";
+import QRCode from "react-native-qrcode-svg";
 import { colors, font, spacing, radius, shadow } from "../../../lib/theme";
 
 import { Alert } from "../../../components/ui/Alert";
 import { apiFetch } from "../../../lib/api";
 
-// Simple QR code rendered as matrix of dots (text-based visual)
+// Real scannable QR using react-native-qrcode-svg
 function QRDisplay({ data }: { data: string }) {
-  // We'll create a visual QR code representation using the token string
   return (
     <View style={styles.qrOuter}>
       <View style={styles.qrInner}>
-        {/* Corner marks */}
-        <View style={[styles.cornerMark, { top: 0, left: 0 }]} />
-        <View style={[styles.cornerMark, { top: 0, right: 0 }]} />
-        <View style={[styles.cornerMark, { bottom: 0, left: 0 }]} />
-        {/* Center data display */}
-        <View style={styles.qrCenter}>
-          <QrCode size={80} color={colors.primary} weight="fill" />
-          <Text style={styles.qrCode}>{data}</Text>
-        </View>
+        <QRCode
+          value={data}
+          size={200}
+          color="#000"
+          backgroundColor="#fff"
+          quietZone={12}
+          enableLinearGradient={false}
+        />
       </View>
     </View>
   );
@@ -169,28 +168,19 @@ const styles = StyleSheet.create({
   loadWrap: { alignItems: "center", gap: spacing.md, paddingTop: spacing.xl },
   loadText: { ...font.bodyMd, color: colors.textMuted },
   qrOuter: {
-    width: 240, height: 240,
     backgroundColor: colors.surface,
     borderRadius: radius.md,
-    padding: 12,
-    borderWidth: 2, borderColor: colors.border,
+    padding: 16,
+    borderWidth: 1.5, borderColor: colors.border,
     ...shadow.ambient,
   },
   qrInner: {
-    flex: 1, borderRadius: radius.sm,
     backgroundColor: "#fff",
-    position: "relative",
+    borderRadius: radius.sm,
+    padding: 4,
     alignItems: "center", justifyContent: "center",
+    overflow: "hidden",
   },
-  cornerMark: {
-    position: "absolute",
-    width: 36, height: 36,
-    borderColor: colors.primary,
-    borderWidth: 4,
-    borderRadius: 4,
-  },
-  qrCenter: { alignItems: "center", gap: 8 },
-  qrCode: { ...font.headlineMd, color: colors.primary, fontSize: 28, fontWeight: "900", letterSpacing: 6 },
   countdownWrap: { alignItems: "center", gap: 8 },
   countdownRing: {
     width: 72, height: 72, borderRadius: 36,

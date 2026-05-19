@@ -21,7 +21,16 @@ function AuthGate() {
     }
   }, [user, isLoading, segments]);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: "fade_from_bottom",
+        animationDuration: 220,
+        contentStyle: { backgroundColor: "transparent" },
+      }}
+    />
+  );
 }
 
 export default function RootLayout() {

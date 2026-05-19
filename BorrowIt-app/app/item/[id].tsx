@@ -30,8 +30,17 @@ import { colors, font, spacing, radius, shadow } from "../../lib/theme";
 const { width: W } = Dimensions.get("window");
 
 export default function ItemDetailScreen() {
-  const params = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{
+    id: string;
+    title?: string;
+    category?: string;
+    dailyRate?: string;
+    imageUrl?: string;
+    ownerName?: string;
+    description?: string;
+  }>();
   const itemId = typeof params.id === "string" ? params.id : "";
+  const isFeatured = itemId.startsWith("feat-");
   const router = useRouter();
   const qc = useQueryClient();
   const { user } = useSession();
@@ -42,7 +51,7 @@ export default function ItemDetailScreen() {
 
   const { data, isLoading } = useQuery<ItemResponse>({
     queryKey: ["item", itemId],
-    enabled: Boolean(itemId),
+    enabled: Boolean(itemId) && !isFeatured,
     queryFn: async () => {
       const res = await apiFetch(`api/items/${itemId}`);
       if (!res.ok) throw new Error("Failed to load item");
@@ -76,7 +85,23 @@ export default function ItemDetailScreen() {
     onError: (e: Error) => Alert.alert("Error", e.message),
   });
 
-  const item = data?.item;
+  // For featured/hardcoded items, build a synthetic item from params
+  const featuredItem = isFeatured ? {
+    id: itemId,
+    title: params.title ?? "Featured Item",
+    category: params.category ?? "Other",
+    dailyRate: parseFloat(params.dailyRate ?? "0"),
+    securityDeposit: 0,
+    description: params.description ?? "",
+    mediaUrls: params.imageUrl ? [params.imageUrl] : [],
+    ownerName: params.ownerName ?? "Owner",
+    ownerId: "",
+    specs: [],
+    lat: 19.076,
+    lng: 72.8777,
+  } : null;
+
+  const item = isFeatured ? featuredItem : data?.item;
   const ownerItems = data?.ownerItems ?? [];
 
   if (!itemId) {
@@ -89,11 +114,11 @@ export default function ItemDetailScreen() {
     );
   }
 
-  if (isLoading || !item) {
+  if ((isLoading && !isFeatured) || !item) {
     return (
       <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
         <View style={styles.loadWrap}>
-          <Text style={styles.loadText}>Loading…</Text>
+          <Text style={styles.loadText}>{isLoading ? "Loading…" : "Item not found"}</Text>
         </View>
       </SafeAreaView>
     );

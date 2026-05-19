@@ -1,11 +1,15 @@
-import React, { useRef, useState, useCallback, useMemo } from "react";
+import React, { useRef, useState, useCallback, useMemo, useEffect, type ComponentType } from "react";
 import {
-  View, Text, StyleSheet, Dimensions, FlatList,
-  TouchableOpacity, Animated, PanResponder, ScrollView,
-  TextInput, Platform, Image,
+  StyleSheet,
+  Dimensions,
+  Animated,
+  PanResponder,
+  Platform,
 } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ScrollView, TextInput, Image } from "../../lib/rn";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { MagnifyingGlass, SlidersHorizontal, X } from "phosphor-react-native";
 import { apiFetch } from "../../lib/api";
 import { ItemCard } from "../../components/ItemCard";
@@ -22,6 +26,65 @@ const MAP_HEIGHT = SCREEN_H - SHEET_PEEK; // map fills most of screen when colla
 const DEMO_LAT = 19.076;
 const DEMO_LNG = 72.8777;
 
+// 5 hardcoded featured items — shown as map pins
+const FEATURED_ITEMS = [
+  {
+    id: "feat-1",
+    title: "Sony A7 III Camera",
+    category: "Electronics",
+    dailyRate: 800,
+    lat: 19.0760,
+    lng: 72.8777,
+    mediaUrls: ["https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400"],
+    ownerName: "Rahul M.",
+    description: "Full-frame mirrorless, 24-70mm lens included. Perfect for events.",
+  },
+  {
+    id: "feat-2",
+    title: "DJI Mini 3 Drone",
+    category: "Electronics",
+    dailyRate: 1200,
+    lat: 19.0890,
+    lng: 72.8650,
+    mediaUrls: ["https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=400"],
+    ownerName: "Priya S.",
+    description: "4K drone with 3 batteries. Great for aerial photography.",
+  },
+  {
+    id: "feat-3",
+    title: "Trek Mountain Bike",
+    category: "Sports",
+    dailyRate: 350,
+    lat: 19.0640,
+    lng: 72.8900,
+    mediaUrls: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"],
+    ownerName: "Amit K.",
+    description: "21-speed, disc brakes. Helmet and lock included.",
+  },
+  {
+    id: "feat-4",
+    title: "Camping Tent (4-person)",
+    category: "Outdoor",
+    dailyRate: 500,
+    lat: 19.0710,
+    lng: 72.8600,
+    mediaUrls: ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400"],
+    ownerName: "Sneha R.",
+    description: "Waterproof, easy setup. Sleeping bags available too.",
+  },
+  {
+    id: "feat-5",
+    title: "Fender Acoustic Guitar",
+    category: "Music",
+    dailyRate: 250,
+    lat: 19.0820,
+    lng: 72.8850,
+    mediaUrls: ["https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400"],
+    ownerName: "Karan V.",
+    description: "CD-60S, great tone. Pick and capo included.",
+  },
+];
+
 const DARK_MAP_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#7c7c8a" }] },
@@ -36,26 +99,67 @@ const DARK_MAP_STYLE = [
 
 const CATEGORIES = ["All", "Electronics", "Tools", "Sports", "Outdoor", "Music", "Fashion", "Books", "Kitchen", "Other"];
 
-let MapView: any = null;
-let Marker: any = null;
+// Android map snapshots clip custom views above ~38px (worse with New Architecture).
+const PIN_SIZE = Platform.OS === "android" ? 36 : 48;
+const PIN_BORDER = 2.5;
+const PIN_INNER = PIN_SIZE - PIN_BORDER * 2;
+const PIN_TAIL_H = 7;
+const MARKER_W = PIN_SIZE;
+const MARKER_H = PIN_SIZE + PIN_TAIL_H;
+
+let MapView: ComponentType<Record<string, unknown>> | null = null;
+let Marker: ComponentType<Record<string, unknown>> | null = null;
 try {
   const maps = require("react-native-maps");
-  MapView = maps.default;
-  Marker = maps.Marker;
-} catch {}
+  MapView = maps.default as ComponentType<Record<string, unknown>>;
+  Marker = maps.Marker as ComponentType<Record<string, unknown>>;
+} catch {
+  /* native maps unavailable (e.g. web) */
+}
 
-function PricePinMarker({ imageUrl, onPress }: { imageUrl?: string; onPress: () => void }) {
+function PricePinMarker({
+  imageUrl,
+  onImageLoad,
+}: {
+  imageUrl?: string;
+  onImageLoad?: () => void;
+}) {
+  // Plain View tree only — TouchableOpacity breaks Android marker bitmap sizing.
+  // Press handling is on <Marker onPress={...} />.
   return (
-    <TouchableOpacity onPress={onPress} style={styles.pinWrapper} activeOpacity={0.85}>
-      <View style={styles.pin}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.pinImage} />
-        ) : (
-          <View style={[styles.pinImage, styles.pinImageFallback]} />
-        )}
-      </View>
-      <View style={styles.pinTail} />
-    </TouchableOpacity>
+    <View style={styles.pinRoot} collapsable={false}>
+      {Platform.OS === "android" ? (
+        <View style={styles.pinCircleOuter} collapsable={false}>
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.pinPhoto}
+              resizeMode="cover"
+              onLoad={onImageLoad}
+              onError={onImageLoad}
+            />
+          ) : (
+            <View style={[styles.pinPhoto, styles.pinPhotoFallback]} />
+          )}
+        </View>
+      ) : (
+        <View style={styles.pinShadowContainer} collapsable={false}>
+          <View style={styles.pinImageClipArea} collapsable={false}>
+            {imageUrl ? (
+              <Image
+                source={{ uri: imageUrl }}
+                style={styles.pinPhoto}
+                resizeMode="cover"
+                onLoad={onImageLoad}
+              />
+            ) : (
+              <View style={[styles.pinPhoto, styles.pinPhotoFallback]} />
+            )}
+          </View>
+        </View>
+      )}
+      <View style={styles.pinTail} collapsable={false} />
+    </View>
   );
 }
 
@@ -77,8 +181,24 @@ function MapBackground({
   onPinPress: (item: any) => void;
   height: number;
 }) {
-  if (!MapView || Platform.OS === "web") {
-    // Web fallback — just a styled dark grid, no fake pins
+  // Always use the 5 hardcoded featured items for map pins
+  const mappableItems = FEATURED_ITEMS;
+  const [tracksViewChanges, setTracksViewChanges] = useState(Platform.OS === "android");
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    setTracksViewChanges(true);
+    const timer = setTimeout(() => setTracksViewChanges(false), 2500);
+    return () => clearTimeout(timer);
+  }, [mappableItems.length]);
+
+  const handlePinImageLoad = useCallback(() => {
+    if (Platform.OS !== "android") return;
+    setTracksViewChanges(true);
+    setTimeout(() => setTracksViewChanges(false), 400);
+  }, []);
+
+  if (!MapView || !Marker || Platform.OS === "web") {
     return (
       <View style={[styles.mapFallback, { height }]}>
         <View style={StyleSheet.absoluteFill}>
@@ -95,8 +215,6 @@ function MapBackground({
       </View>
     );
   }
-
-  const mappableItems = items.filter(hasCoords);
 
   return (
     <View style={{ height }}>
@@ -115,9 +233,14 @@ function MapBackground({
           <Marker
             key={item.id}
             coordinate={{ latitude: item.lat, longitude: item.lng }}
+            anchor={{ x: 0.5, y: 1 }}
+            tracksViewChanges={tracksViewChanges}
             onPress={() => onPinPress(item)}
           >
-            <PricePinMarker imageUrl={item.images?.[0]} onPress={() => onPinPress(item)} />
+            <PricePinMarker
+              imageUrl={item.mediaUrls?.[0]}
+              onImageLoad={handlePinImageLoad}
+            />
           </Marker>
         ))}
       </MapView>
@@ -126,6 +249,7 @@ function MapBackground({
 }
 
 export default function DiscoverScreen() {
+  const router = useRouter();
   const sheetY = useRef(new Animated.Value(0)).current;
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -168,14 +292,21 @@ export default function DiscoverScreen() {
 
   const handlePinPress = useCallback(
     (item: any) => {
-      Animated.spring(sheetY, {
-        toValue: -(SHEET_MAX - SHEET_PEEK),
-        useNativeDriver: false,
-        stiffness: 200,
-        damping: 24,
-      }).start(() => setIsExpanded(true));
+      // Navigate to item detail with data as params
+      router.push({
+        pathname: "/item/[id]" as any,
+        params: {
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          dailyRate: String(item.dailyRate),
+          imageUrl: item.mediaUrls?.[0] ?? "",
+          ownerName: item.ownerName ?? "",
+          description: item.description ?? "",
+        },
+      });
     },
-    [sheetY]
+    [router]
   );
 
   const panResponder = useRef(
@@ -229,13 +360,14 @@ export default function DiscoverScreen() {
   const hasFilters = search.trim() || selectedCategory !== "All" || maxRate.trim();
 
   const numColumns = isExpanded ? 2 : 1;
+  const AnimatedView = Animated.createAnimatedComponent(View);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#1a1a2e" }}>
       {/* Map — shrinks as sheet expands. No overflow:hidden so pins aren't clipped */}
-      <Animated.View style={{ height: mapHeight }}>
-        <MapBackground items={rawItems} onPinPress={handlePinPress} height={MAP_HEIGHT} />
-      </Animated.View>
+      <AnimatedView style={{ height: mapHeight }}>
+        <MapBackground items={FEATURED_ITEMS} onPinPress={handlePinPress} height={MAP_HEIGHT} />
+      </AnimatedView>
 
       {/* Search bar — floats over map */}
       <SafeAreaView edges={["top"]} style={styles.searchWrap}>
@@ -288,7 +420,7 @@ export default function DiscoverScreen() {
       </SafeAreaView>
 
       {/* Bottom Sheet */}
-      <Animated.View style={[styles.sheet, { height: sheetHeight }]}>
+      <AnimatedView style={[styles.sheet, { height: sheetHeight }]}>
         {/* Drag handle */}
         <View {...panResponder.panHandlers} style={styles.grabberWrap}>
           <View style={styles.grabber} />
@@ -352,7 +484,7 @@ export default function DiscoverScreen() {
             />
           )
         )}
-      </Animated.View>
+      </AnimatedView>
     </View>
   );
 }
@@ -372,35 +504,56 @@ const styles = StyleSheet.create({
     top: 0, bottom: 0, width: 1,
     backgroundColor: "rgba(255,255,255,0.06)",
   },
-  pinWrapper: {
+  pinRoot: {
+    width: MARKER_W,
+    height: MARKER_H,
     alignItems: "center",
+    overflow: "visible",
   },
-  pin: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2.5,
-    borderColor: "#fff",
+  pinCircleOuter: {
+    width: PIN_SIZE,
+    height: PIN_SIZE,
+    borderRadius: PIN_SIZE / 2,
+    padding: PIN_BORDER,
+    backgroundColor: "#fff",
     overflow: "hidden",
-    backgroundColor: "#333",
+  },
+  pinShadowContainer: {
+    width: PIN_SIZE,
+    height: PIN_SIZE,
+    borderRadius: PIN_SIZE / 2,
+    backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
     elevation: 8,
   },
-  pinImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 24,
+  pinImageClipArea: {
+    width: PIN_SIZE,
+    height: PIN_SIZE,
+    borderRadius: PIN_SIZE / 2,
+    borderWidth: PIN_BORDER,
+    borderColor: "#fff",
+    overflow: "hidden",
+    backgroundColor: "#333",
   },
-  pinImageFallback: {
+  pinPhoto: {
+    width: PIN_INNER,
+    height: PIN_INNER,
+    borderRadius: PIN_INNER / 2,
+  },
+  pinPhotoFallback: {
     backgroundColor: "#555",
   },
   pinTail: {
-    width: 0, height: 0,
-    borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 8,
-    borderLeftColor: "transparent", borderRightColor: "transparent",
+    width: 0,
+    height: 0,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: PIN_TAIL_H,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
     borderTopColor: "#fff",
     marginTop: -1,
   },
